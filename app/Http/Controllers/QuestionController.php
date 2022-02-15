@@ -6,6 +6,7 @@ use App\Models\Question;
 use App\Models\Quiz;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Arr;
 
 class QuestionController extends Controller
 {
@@ -28,7 +29,14 @@ class QuestionController extends Controller
             $attributes = request()->validate([
                 'question_text' => ['required'],
                 'options' => ['present'],
-                'answer' => ['required'],
+                'answer' => ['required', function ($attribute, $value, $fail) {
+                    $options = Arr::flatten(request('options'));
+                    foreach ($value as $answer) {
+                        if (!in_array($answer, $options)) {
+                            $fail('The '.$attribute.' is invalid.');
+                        }
+                    }
+                },],
                 'question_type' => ['required', Rule::in(['text', 'textarea', 'select', 'radio', 'checkbox'])],
                 'answer_explanation' => ['nullable'],
                 'more_info_link' => ['nullable']
@@ -62,7 +70,14 @@ class QuestionController extends Controller
             $attributes = request()->validate([
                 'question_text' => ['required'],
                 'options' => ['present'],
-                'answer' => ['required'],
+                'answer' => ['required', function ($attribute, $value, $fail) {
+                    $options = Arr::flatten(request('options'));
+                    foreach ($value as $answer) {
+                        if (!in_array($answer, $options)) {
+                            $fail('The '.$attribute.' is invalid.');
+                        }
+                    }
+                },],
                 'question_type' => ['required', Rule::in(['text', 'textarea', 'select', 'radio', 'checkbox'])],
                 'answer_explanation' => ['nullable'],
                 'more_info_link' => ['nullable']
