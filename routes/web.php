@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\QuizController;
 use Illuminate\Support\Facades\Route;
 
@@ -28,3 +29,7 @@ Route::get('/quiz', [QuizController::class, 'index'])->middleware('auth');
 Route::post('/quiz', [QuizController::class, 'store'])->middleware('auth');
 Route::patch('/quiz/{quiz}', [QuizController::class, 'update'])->middleware('auth');
 Route::delete('/quiz/{quiz}', [QuizController::class, 'destroy'])->middleware('auth');
+
+Route::post('/quiz/{quiz}/question', [QuestionController::class, 'store'])->middleware('auth');
+Route::patch('/quiz/{quiz}/question/{question}', [QuestionController::class, 'update'])->middleware('auth');
+Route::delete('/quiz/{quiz}/question/{question}', [QuestionController::class, 'destroy'])->middleware('auth');
