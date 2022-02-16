@@ -25,8 +25,10 @@ Route::get('/dashboard', function () {
 
 require __DIR__.'/auth.php';
 
-Route::get('/quiz', [QuizController::class, 'index'])->middleware('auth');
-Route::post('/quiz', [QuizController::class, 'store'])->middleware('auth');
+Route::get('/quiz', [QuizController::class, 'index'])->middleware('auth')->name('quiz.index');
+Route::get('/quiz/create', [QuizController::class, 'create'])->middleware('auth')->name('quiz.create');
+Route::get('/quiz/{quiz}/edit', [QuizController::class, 'edit'])->middleware('auth')->name('quiz.edit');
+Route::post('/quiz', [QuizController::class, 'store'])->middleware('auth')->name('quiz.store');
 Route::patch('/quiz/{quiz}', [QuizController::class, 'update'])->middleware('auth');
 Route::delete('/quiz/{quiz}', [QuizController::class, 'destroy'])->middleware('auth');
 

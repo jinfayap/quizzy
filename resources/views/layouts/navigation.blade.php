@@ -13,8 +13,8 @@
                             <a href="{{ route('dashboard') }}"
                                 class="px-3 py-2 rounded-md text-sm font-medium {{ Route::is('dashboard') ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }}">Dashboard</a>
 
-                            <a href="#"
-                                class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium ">Quiz</a>
+                            <a href="{{ route('quiz.index') }}"
+                                class="px-3 py-2 rounded-md text-sm font-medium {{ Route::is('quiz.index') ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }}">Quiz</a>
 
                             <a href="#"
                                 class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Result</a>
@@ -73,7 +73,7 @@
                                     @csrf
 
                                     <a class="block px-4 py-2 text-sm text-gray-700" href="route('logout')" onclick="event.preventDefault();
-                                                                    this.closest('form').submit();">
+                                                                            this.closest('form').submit();">
                                         {{ __('Sign out') }}
                                     </a>
                                 </form>
@@ -122,15 +122,15 @@
     </div>
 
     <!-- Mobile menu, show/hide based on menu state. -->
-    <div class="md:hidden" id="mobile-menu" x-show="menu">
+    <div class="md:hidden" id="mobile-menu" x-show="menu" x-cloak>
         @auth
             <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
                 <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" -->
                 <a href="{{ route('dashboard') }}"
                     class="block px-3 py-2 rounded-md text-base font-medium {{ Route::is('dashboard') ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }}">Dashboard</a>
 
-                <a href="#"
-                    class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium ">Quiz</a>
+                <a href="{{ route('quiz.index') }}"
+                    class="block px-3 py-2 rounded-md text-base font-medium {{ Route::is('quiz.index') ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }}">Quiz</a>
 
                 <a href="#"
                     class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Result</a>
@@ -174,7 +174,7 @@
 
                         <a class="block px-3 py-2 rounded-md text-base font-medium text-gray-400 hover:text-white hover:bg-gray-700"
                             href="route('logout')" onclick="event.preventDefault();
-                                                            this.closest('form').submit();">
+                                                                    this.closest('form').submit();">
                             {{ __('Sign out') }}
                         </a>
                     </form>

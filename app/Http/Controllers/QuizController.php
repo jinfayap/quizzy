@@ -7,17 +7,38 @@ use Illuminate\Http\Request;
 
 class QuizController extends Controller
 {
+    public function index()
+    {
+        $quizzes = Quiz::latest()->get();
+
+        return view('quiz.index', compact('quizzes'));
+    }
+
+    public function create()
+    {
+        return view('quiz.create');
+    }
+
     public function store()
     {
         $attributes = request()->validate([
             'title' => ['required'],
             'description' => ['nullable'],
-            'duration' => ['nullable']
+            'duration' => ['nullable', 'integer']
         ]);
 
         $attributes['user_id'] = auth()->id();
 
-        Quiz::create($attributes);
+        $quiz = Quiz::create($attributes);
+
+        return view('quiz.edit', compact('quiz'));
+    }
+
+    public function edit(Quiz $quiz)
+    {
+        $quiz->load('questions');
+
+        return view('quiz.edit', compact('quiz'));
     }
 
     public function update(Quiz $quiz)

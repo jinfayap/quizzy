@@ -10,9 +10,6 @@ import { createApp } from "vue";
 
 const app = createApp({});
 
-app.component(
-  "example-component",
-  require("../components/ExampleComponent.vue").default
-);
+app.component("quiz-view", require("../components/QuizView.vue").default);
 
 app.mount("#app");
