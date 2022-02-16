@@ -273,7 +273,7 @@ class QuestionTest extends TestCase
 
         $this->patch("/quiz/{$quiz->getRouteKey()}/question/{$question->getRouteKey()}", $attributes = [
             'question_text' => 'question text',
-            'question_type' => 'select',
+            'question_type' => 'checkbox',
             'options' => [
                 ['option' => 'one'],
                 ['option' => 'two'],
@@ -315,7 +315,7 @@ class QuestionTest extends TestCase
             "answer" => ["five"]
         ]);
 
-        $this->post("/quiz/{$quiz->getRouteKey()}/question", $question)->assertSessionHasErrors('answer');
+        $this->post("/quiz/{$quiz->getRouteKey()}/question", $question)->assertSessionHasErrors(['answer' => "The answer should contain values found in the options choices"]);
 
         $this->assertDatabaseCount('questions', 0);
 
@@ -355,7 +355,7 @@ class QuestionTest extends TestCase
             "answer" => ["one", "five"]
         ]);
 
-        $this->post("/quiz/{$quiz->getRouteKey()}/question", $question)->assertSessionHasErrors('answer');
+        $this->post("/quiz/{$quiz->getRouteKey()}/question", $question)->assertSessionHasErrors(['answer' => "The answer should contain values found in the options choices"]);
 
         $this->assertDatabaseCount('questions', 0);
 
@@ -395,7 +395,7 @@ class QuestionTest extends TestCase
             "answer" => ["five"]
         ]);
 
-        $this->post("/quiz/{$quiz->getRouteKey()}/question", $question)->assertSessionHasErrors('answer');
+        $this->post("/quiz/{$quiz->getRouteKey()}/question", $question)->assertSessionHasErrors(['answer' => "The answer should contain values found in the options choices"]);
 
         $this->assertDatabaseCount('questions', 0);
 
@@ -445,7 +445,7 @@ class QuestionTest extends TestCase
                 ['option' => 'four'],
             ],
             'answer' => ['five'],
-        ])->assertSessionHasErrors('answer');
+        ])->assertSessionHasErrors(['answer' => "The answer should contain values found in the options choices"]);
 
         $this->patch("/quiz/{$quiz->getRouteKey()}/question/{$question->getRouteKey()}", [
             'question_text' => 'question text',
@@ -481,7 +481,7 @@ class QuestionTest extends TestCase
 
         $this->patch("/quiz/{$quiz->getRouteKey()}/question/{$question->getRouteKey()}", [
             'question_text' => 'question text',
-            'question_type' => 'radio',
+            'question_type' => 'checkbox',
             'options' => [
                 ['option' => 'one'],
                 ['option' => 'two'],
@@ -489,11 +489,11 @@ class QuestionTest extends TestCase
                 ['option' => 'four'],
             ],
             'answer' => ['five', 'two'],
-        ])->assertSessionHasErrors('answer');
+        ])->assertSessionHasErrors(['answer' => "The answer should contain values found in the options choices"]);
 
         $this->patch("/quiz/{$quiz->getRouteKey()}/question/{$question->getRouteKey()}", [
             'question_text' => 'question text',
-            'question_type' => 'radio',
+            'question_type' => 'checkbox',
             'options' => [
                 ['option' => 'one'],
                 ['option' => 'two'],
@@ -533,7 +533,7 @@ class QuestionTest extends TestCase
                 ['option' => 'four'],
             ],
             'answer' => ['five'],
-        ])->assertSessionHasErrors('answer');
+        ])->assertSessionHasErrors(['answer' => "The answer should contain values found in the options choices"]);
 
         $this->patch("/quiz/{$quiz->getRouteKey()}/question/{$question->getRouteKey()}", [
             'question_text' => 'question text',
@@ -545,6 +545,258 @@ class QuestionTest extends TestCase
                 ['option' => 'four'],
             ],
             'answer' => ['one'],
+        ])->assertStatus(200);
+    }
+
+    /** @test */
+    public function radio_question_can_only_have_one_answer_when_creating()
+    {
+        $user = $this->signIn();
+
+        $quiz = Quiz::factory()->create(['user_id' => $user->id]);
+
+        $question = Question::factory()->radio()->raw([
+            'quiz_id' => $quiz->id,
+            'user_id' => $user->id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => ["one", "two"]
+        ]);
+
+        $this->post("/quiz/{$quiz->getRouteKey()}/question", $question)->assertSessionHasErrors(['answer' => 'The answer should only contain one answer only']);
+
+        $this->assertDatabaseCount('questions', 0);
+
+        $question = Question::factory()->radio()->raw([
+            'quiz_id' => $quiz->id,
+            'user_id' => $user->id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => ["one"]
+        ]);
+
+        $this->post("/quiz/{$quiz->getRouteKey()}/question", $question)->assertStatus(200);
+
+        $this->assertDatabaseCount('questions', 1);
+    }
+
+    /** @test */
+    public function select_question_can_only_have_one_answer_when_creating()
+    {
+        $user = $this->signIn();
+
+        $quiz = Quiz::factory()->create(['user_id' => $user->id]);
+
+        $question = Question::factory()->select()->raw([
+            'quiz_id' => $quiz->id,
+            'user_id' => $user->id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => ["one", "two"]
+        ]);
+
+        $this->post("/quiz/{$quiz->getRouteKey()}/question", $question)->assertSessionHasErrors(['answer' => 'The answer should only contain one answer only']);
+
+        $this->assertDatabaseCount('questions', 0);
+
+        $question = Question::factory()->select()->raw([
+            'quiz_id' => $quiz->id,
+            'user_id' => $user->id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => ["one"]
+        ]);
+
+        $this->post("/quiz/{$quiz->getRouteKey()}/question", $question)->assertStatus(200);
+
+        $this->assertDatabaseCount('questions', 1);
+    }
+
+    /** @test */
+    public function checkbox_question_can_have_single_or_multiple_answer_when_creating()
+    {
+        $user = $this->signIn();
+
+        $quiz = Quiz::factory()->create(['user_id' => $user->id]);
+
+        $questionSingleChoice = Question::factory()->checkbox()->raw([
+            'quiz_id' => $quiz->id,
+            'user_id' => $user->id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => ["one"]
+        ]);
+
+        $this->post("/quiz/{$quiz->getRouteKey()}/question", $questionSingleChoice)->assertStatus(200);
+
+        $this->assertDatabaseCount('questions', 1);
+
+        $questionMultipleChoice = Question::factory()->checkbox()->raw([
+            'quiz_id' => $quiz->id,
+            'user_id' => $user->id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => ["one", "two"]
+        ]);
+
+        $this->post("/quiz/{$quiz->getRouteKey()}/question", $questionMultipleChoice)->assertStatus(200);
+
+        $this->assertDatabaseCount('questions', 2);
+    }
+
+    /** @test */
+    public function select_question_can_have_single_answer_when_updating()
+    {
+        $user = $this->signIn();
+
+        $quiz = Quiz::factory()->create(['user_id' => $user->id]);
+
+        $question = Question::factory()->select()->create([
+            'quiz_id' => $quiz->id,
+            'user_id' => $user->id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => json_encode(['one'])
+        ]);
+
+        $this->patch("/quiz/{$quiz->getRouteKey()}/question/{$question->getRouteKey()}", [
+            'question_text' => 'question text',
+            'question_type' => 'select',
+            'options' => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            'answer' => ["one", "two"],
+        ])->assertSessionHasErrors(['answer' => 'The answer should only contain one answer only']);
+
+        $this->patch("/quiz/{$quiz->getRouteKey()}/question/{$question->getRouteKey()}", [
+            'question_text' => 'question text',
+            'question_type' => 'select',
+            'options' => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            'answer' => ['one'],
+        ])->assertStatus(200);
+    }
+
+    /** @test */
+    public function radio_question_can_have_single_answer_when_updating()
+    {
+        $user = $this->signIn();
+
+        $quiz = Quiz::factory()->create(['user_id' => $user->id]);
+
+        $question = Question::factory()->radio()->create([
+            'quiz_id' => $quiz->id,
+            'user_id' => $user->id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => json_encode(['one'])
+        ]);
+
+        $this->patch("/quiz/{$quiz->getRouteKey()}/question/{$question->getRouteKey()}", [
+            'question_text' => 'question text',
+            'question_type' => 'radio',
+            'options' => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            'answer' => ["one", "two"],
+        ])->assertSessionHasErrors(['answer' => 'The answer should only contain one answer only']);
+
+        $this->patch("/quiz/{$quiz->getRouteKey()}/question/{$question->getRouteKey()}", [
+            'question_text' => 'question text',
+            'question_type' => 'radio',
+            'options' => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            'answer' => ['one'],
+        ])->assertStatus(200);
+    }
+
+    /** @test */
+    public function checkbox_question_can_have_single_or_multiple_answers_when_updating()
+    {
+        $user = $this->signIn();
+
+        $quiz = Quiz::factory()->create(['user_id' => $user->id]);
+
+        $question = Question::factory()->checkbox()->create([
+            'quiz_id' => $quiz->id,
+            'user_id' => $user->id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => json_encode(['one'])
+        ]);
+
+        $this->patch("/quiz/{$quiz->getRouteKey()}/question/{$question->getRouteKey()}", [
+            'question_text' => 'question text',
+            'question_type' => 'checkbox',
+            'options' => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            'answer' => ["one"],
+        ])->assertStatus(200);
+
+        $this->patch("/quiz/{$quiz->getRouteKey()}/question/{$question->getRouteKey()}", [
+            'question_text' => 'question text',
+            'question_type' => 'checkbox',
+            'options' => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            'answer' => ["one", "two"],
         ])->assertStatus(200);
     }
 }

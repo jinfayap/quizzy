@@ -33,8 +33,12 @@ class QuestionController extends Controller
                     $options = Arr::flatten(request('options'));
                     foreach ($value as $answer) {
                         if (!in_array($answer, $options)) {
-                            $fail('The '.$attribute.' is invalid.');
+                            $fail("The {$attribute} should contain values found in the options choices");
                         }
+                    }
+                }, function ($attribute, $value, $fail) {
+                    if (in_array(request('question_type'), ['radio', 'select']) && count($value) > 1) {
+                        $fail("The {$attribute} should only contain one answer only");
                     }
                 },],
                 'question_type' => ['required', Rule::in(['text', 'textarea', 'select', 'radio', 'checkbox'])],
@@ -74,10 +78,14 @@ class QuestionController extends Controller
                     $options = Arr::flatten(request('options'));
                     foreach ($value as $answer) {
                         if (!in_array($answer, $options)) {
-                            $fail('The '.$attribute.' is invalid.');
+                            $fail("The {$attribute} should contain values found in the options choices");
                         }
                     }
-                },],
+                },function ($attribute, $value, $fail) {
+                    if (in_array(request('question_type'), ['radio', 'select']) && count($value) > 1) {
+                        $fail("The {$attribute} should only contain one answer only");
+                    }
+                }],
                 'question_type' => ['required', Rule::in(['text', 'textarea', 'select', 'radio', 'checkbox'])],
                 'answer_explanation' => ['nullable'],
                 'more_info_link' => ['nullable']
