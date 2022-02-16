@@ -51,4 +51,27 @@ module.exports = {
   },
 
   plugins: [require("@tailwindcss/forms")],
+  safelist: [
+    {
+      pattern: /.*/,
+      variants: [
+        "first",
+        "last",
+        "odd",
+        "even",
+        "visited",
+        "checked",
+        "empty",
+        "read-only",
+        "group-hover",
+        "group-focus",
+        "focus-within",
+        "hover",
+        "focus",
+        "focus-visible",
+        "active",
+        "disabled",
+      ],
+    },
+  ],
 };
