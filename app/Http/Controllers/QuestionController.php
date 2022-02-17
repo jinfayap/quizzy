@@ -53,6 +53,10 @@ class QuestionController extends Controller
         $attributes['user_id'] = auth()->id();
 
         $question = Question::create($attributes);
+
+        if (request()->expectsJson()) {
+            return response()->json(compact('question'));
+        }
     }
 
     public function update(Quiz $quiz, Question $question)
