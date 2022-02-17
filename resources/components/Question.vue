@@ -32,7 +32,7 @@
               </template>
             </modal>
 
-            <modal>
+            <modal ref="deleteQuestion">
               <template v-slot:trigger>
                 <button
                   class="p-2 rounded-md bg-red-400 hover:bg-red-500 text-white flex items-center"
@@ -51,6 +51,28 @@
                     />
                   </svg>
                   <span class="ml-1 hidden lg:block text-xs">Delete</span>
+                </button>
+              </template>
+
+              <template v-slot:heading>
+                You are about to delete this question!
+              </template>
+
+              <template v-slot:body>
+                <p>
+                  Your action is irreversible. Ensure you know what you are
+                  doing. Click cancel if you do not wish to delete this
+                  question!
+                </p>
+              </template>
+
+              <template v-slot:button>
+                <button
+                  type="button"
+                  class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-400 text-base font-medium text-white hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
+                  @click="deleteQuestion"
+                >
+                  Delete
                 </button>
               </template>
             </modal>
@@ -167,6 +189,8 @@ export default {
     index: Number,
   },
 
+  emits: ["deleteQuestion"],
+
   data() {
     return {
       question: this.data,
@@ -176,6 +200,15 @@ export default {
   methods: {
     isCorrectAnswer(option) {
       return this.question.answer.includes(option);
+    },
+
+    deleteQuestion() {
+      axios
+        .delete(`/quiz/${this.question.quiz_id}/question/${this.question.id}`)
+        .then((response) => {
+          this.$refs.deleteQuestion.isOpen = false;
+          this.$emit("deleteQuestion", this.index);
+        });
     },
   },
 

@@ -123,6 +123,7 @@
       v-for="(question, index) in quiz.questions"
       :data="question"
       :index="index"
+      @deleteQuestion="deleteQuestion"
     ></question>
   </section>
 </template>
@@ -158,6 +159,10 @@ export default {
   methods: {
     updateQuestion(data) {
       this.question = data;
+    },
+
+    deleteQuestion(index) {
+      this.quiz.questions.splice(index, 1);
     },
 
     submit() {

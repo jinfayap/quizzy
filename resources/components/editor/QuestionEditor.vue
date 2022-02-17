@@ -212,7 +212,7 @@ export default {
     dataError: Object,
   },
 
-  emits: ["updateQuestion"],
+  emits: ["updateQuestion", "deleteQuestion"],
 
   data() {
     return {
