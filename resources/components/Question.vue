@@ -10,7 +10,7 @@
           >
           <!-- FAB Buttons -->
           <div class="flex justify-end space-x-2">
-            <modal>
+            <modal ref="editQuestion">
               <template v-slot:trigger>
                 <button
                   class="p-2 rounded-md bg-green-400 hover:bg-green-500 text-white flex items-center"
@@ -30,7 +30,68 @@
                   ><span class="ml-1 hidden lg:block text-xs">Edit</span>
                 </button>
               </template>
+
+              <template v-slot:icon>
+                <div class="bg-blue-500 rounded-full text-white p-2">
+                  <svg
+                    class="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                    />
+                  </svg>
+                </div>
+              </template>
+
+              <template v-slot:heading> Create new question Form </template>
+
+              <template v-slot:body>
+                <question-editor
+                  ref="editEditor"
+                  :data="question"
+                  :data-error="errors"
+                  @updateQuestion="updateQuestion"
+                  mode="edit"
+                ></question-editor>
+              </template>
+
+              <template v-slot:button>
+                <button
+                  type="button"
+                  class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-400 text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm"
+                  @click="submit"
+                >
+                  Update
+                </button>
+              </template>
             </modal>
+            <!-- <modal>
+              <template v-slot:trigger>
+                <button
+                  class="p-2 rounded-md bg-green-400 hover:bg-green-500 text-white flex items-center"
+                >
+                  <svg
+                    class="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                    /></svg
+                  ><span class="ml-1 hidden lg:block text-xs">Edit</span>
+                </button>
+              </template>
+            </modal> -->
 
             <modal ref="deleteQuestion">
               <template v-slot:trigger>
@@ -183,17 +244,23 @@
   <hr />
 </template>
 <script>
+import QuestionEditor from "./editor/QuestionEditor.vue";
 export default {
   props: {
     data: Object,
     index: Number,
   },
 
-  emits: ["deleteQuestion"],
+  components: {
+    QuestionEditor,
+  },
+
+  emits: ["deleteQuestion", "updateQuestion"],
 
   data() {
     return {
       question: this.data,
+      errors: null,
     };
   },
 
@@ -208,6 +275,30 @@ export default {
         .then((response) => {
           this.$refs.deleteQuestion.isOpen = false;
           this.$emit("deleteQuestion", this.index);
+        });
+    },
+
+    updateQuestion(data) {
+      this.question = data;
+    },
+
+    submit() {
+      const old = this.question;
+
+      this.question = this.$refs.editEditor.question;
+
+      axios
+        .patch(
+          `/quiz/${this.question.quiz_id}/question/${this.question.id}`,
+          this.question
+        )
+        .then(() => {
+          this.$refs.editQuestion.isOpen = false;
+          this.$emit("updateQuestion", this.index, this.question);
+        })
+        .catch((error) => {
+          this.question = old;
+          this.errors = error.response.data.errors;
         });
     },
   },

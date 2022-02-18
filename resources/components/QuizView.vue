@@ -103,7 +103,8 @@
           <question-editor
             :data="question"
             :data-error="errors"
-            @updateQuestion="updateQuestion"
+            @updateQuestion="updateFormQuestion"
+            mode="create"
           ></question-editor>
         </template>
 
@@ -124,6 +125,7 @@
       :data="question"
       :index="index"
       @deleteQuestion="deleteQuestion"
+      @updateQuestion="updateQuestion"
     ></question>
   </section>
 </template>
@@ -157,12 +159,16 @@ export default {
   },
 
   methods: {
-    updateQuestion(data) {
+    updateFormQuestion(data) {
       this.question = data;
     },
 
     deleteQuestion(index) {
       this.quiz.questions.splice(index, 1);
+    },
+
+    updateQuestion(index, data) {
+      this.quiz.questions[index] = data;
     },
 
     submit() {

@@ -210,6 +210,7 @@ export default {
   props: {
     data: Object,
     dataError: Object,
+    mode: String,
   },
 
   emits: ["updateQuestion", "deleteQuestion"],
@@ -272,6 +273,8 @@ export default {
     },
 
     updateData() {
+      if (this.mode === "edit") return;
+
       let data = JSON.parse(JSON.stringify(this.question));
       this.$emit("updateQuestion", data);
     },
