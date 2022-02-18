@@ -601,6 +601,9 @@ select {
   white-space: nowrap;
   border-width: 0;
 }
+.pointer-events-none {
+  pointer-events: none;
+}
 .fixed {
   position: fixed;
 }
@@ -624,6 +627,15 @@ select {
 }
 .top-0 {
   top: 0px;
+}
+.bottom-0 {
+  bottom: 0px;
+}
+.bottom-5 {
+  bottom: 1.25rem;
+}
+.right-5 {
+  right: 1.25rem;
 }
 .z-0 {
   z-index: 0;
@@ -799,6 +811,12 @@ select {
 }
 .w-12 {
   width: 3rem;
+}
+.min-w-\[50px\] {
+  min-width: 50px;
+}
+.min-w-\[100px\] {
+  min-width: 100px;
 }
 .max-w-7xl {
   max-width: 80rem;
@@ -1058,6 +1076,26 @@ select {
   --tw-bg-opacity: 1;
   background-color: rgb(186 230 253 / var(--tw-bg-opacity));
 }
+.bg-blue-200 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(191 219 254 / var(--tw-bg-opacity));
+}
+.bg-blue-100 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(219 234 254 / var(--tw-bg-opacity));
+}
+.bg-gray-400 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(156 163 175 / var(--tw-bg-opacity));
+}
+.bg-sky-400 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(56 189 248 / var(--tw-bg-opacity));
+}
+.bg-yellow-400 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(250 204 21 / var(--tw-bg-opacity));
+}
 .bg-opacity-75 {
   --tw-bg-opacity: 0.75;
 }
@@ -1126,6 +1164,10 @@ select {
 .py-3 {
   padding-top: 0.75rem;
   padding-bottom: 0.75rem;
+}
+.px-8 {
+  padding-left: 2rem;
+  padding-right: 2rem;
 }
 .pl-3 {
   padding-left: 0.75rem;

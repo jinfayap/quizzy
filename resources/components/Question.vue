@@ -275,6 +275,10 @@ export default {
         .then((response) => {
           this.$refs.deleteQuestion.isOpen = false;
           this.$emit("deleteQuestion", this.index);
+          flash("Question has been deleted", "success");
+        })
+        .catch((error) => {
+          flash("Failure in deletig the question", "danger");
         });
     },
 
@@ -295,10 +299,15 @@ export default {
         .then(() => {
           this.$refs.editQuestion.isOpen = false;
           this.$emit("updateQuestion", this.index, this.question);
+          flash("Success updating the question", "success");
         })
         .catch((error) => {
           this.question = old;
           this.errors = error.response.data.errors;
+          flash(
+            "Error in updating the question, Please try again after corrections",
+            "danger"
+          );
         });
     },
   },

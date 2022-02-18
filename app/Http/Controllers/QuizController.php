@@ -31,7 +31,7 @@ class QuizController extends Controller
 
         $quiz = Quiz::create($attributes);
 
-        return view('quiz.edit', compact('quiz'));
+        return redirect()->route('quiz.edit', $quiz)->with('flash', 'Quiz created!');
     }
 
     public function edit(Quiz $quiz)

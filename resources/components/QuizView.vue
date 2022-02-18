@@ -44,9 +44,16 @@
       />
     </div>
 
+    <div v-if="quizError" class="mt-2 bg-red-100 text-left px-4 py-2">
+      <span class="text-xs text-red-500 block" v-for="error in quizError">
+        {{ error[0] }}
+      </span>
+    </div>
+
     <div class="mt-4 flex justify-end">
       <button
         class="bg-blue-400 hover:bg-blue-500 hover:shadow-md px-4 py-2 text-white rounded-md"
+        @click="save"
       >
         Save
       </button>
@@ -150,6 +157,7 @@ export default {
         answer_explanation: "",
         more_info_link: "",
       },
+      quizError: null,
       errors: null,
     };
   },
@@ -170,16 +178,30 @@ export default {
     updateQuestion(index, data) {
       this.quiz.questions[index] = data;
     },
-
+    save() {
+      axios
+        .patch(`/quiz/${this.quiz.id}`, this.quiz)
+        .then((response) => {
+          flash("Quiz information updated");
+        })
+        .catch((error) => {
+          this.quizError = error.response.data.errors;
+          console.log(error.response.data.errors);
+          console.log(this.quizError);
+          flash("Error in updating the quiz information", "danger");
+        });
+    },
     submit() {
       axios
         .post(`/quiz/${this.quiz.id}/question`, this.question)
         .then(({ data }) => {
           this.$refs.new.isOpen = false;
           this.quiz.questions.push(data.question);
+          flash("Question has been created", "info");
         })
         .catch((error) => {
           this.errors = error.response.data.errors;
+          flash("Failed to create the question", "warning");
         });
     },
   },
