@@ -197,6 +197,14 @@ export default {
         .then(({ data }) => {
           this.$refs.new.isOpen = false;
           this.quiz.questions.push(data.question);
+          this.question = {
+            question_text: "",
+            options: null,
+            answer: "",
+            question_type: "text",
+            answer_explanation: "",
+            more_info_link: "",
+          };
           flash("Question has been created", "info");
         })
         .catch((error) => {

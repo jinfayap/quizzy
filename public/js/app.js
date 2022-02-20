@@ -22966,6 +22966,14 @@ __webpack_require__.r(__webpack_exports__);
 
         _this2.quiz.questions.push(data.question);
 
+        _this2.question = {
+          question_text: "",
+          options: null,
+          answer: "",
+          question_type: "text",
+          answer_explanation: "",
+          more_info_link: ""
+        };
         flash("Question has been created", "info");
       })["catch"](function (error) {
         _this2.errors = error.response.data.errors;
