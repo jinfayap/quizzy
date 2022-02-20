@@ -14,6 +14,13 @@ class QuizController extends Controller
         return view('quiz.index', compact('quizzes'));
     }
 
+    public function show(Quiz $quiz)
+    {
+        $quiz->loadCount('questions')->load('creator');
+
+        return view('quiz.show', compact('quiz'));
+    }
+
     public function create()
     {
         return view('quiz.create');

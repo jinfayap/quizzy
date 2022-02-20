@@ -22,6 +22,7 @@ import { createApp } from "vue";
 const app = createApp({});
 
 app.component("quiz-view", require("../components/QuizView.vue").default);
+app.component("quiz-settings", require("../components/QuizSettings.vue").default);
 app.component("modal", require("../components/Modal.vue").default);
 app.component("flash", require("../components/Flash.vue").default);
 
