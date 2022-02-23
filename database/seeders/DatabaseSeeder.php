@@ -6,6 +6,8 @@ use App\Models\Question;
 use App\Models\Quiz;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class DatabaseSeeder extends Seeder
 {
@@ -85,5 +87,13 @@ class DatabaseSeeder extends Seeder
             'answer_explanation' => '',
             'more_info_link' => '',
         ]);
+
+        $role = Role::create(['name' => 'admin']);
+
+        $permission = Permission::create(['name' => 'create-roles']);
+
+        $role->givePermissionTo($permission);
+
+        $user->assignRole($role);
     }
 }
