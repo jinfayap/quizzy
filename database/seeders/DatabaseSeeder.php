@@ -88,11 +88,22 @@ class DatabaseSeeder extends Seeder
             'more_info_link' => '',
         ]);
 
-        $role = Role::create(['name' => 'admin']);
 
-        $permission = Permission::create(['name' => 'create-roles']);
+        // Permission
+        Permission::create(['name' => 'create role']);
+        Permission::create(['name' => 'delete role']);
 
-        $role->givePermissionTo($permission);
+        Permission::create(['name' => 'create permission']);
+        Permission::create(['name' => 'delete permission']);
+
+        Permission::create(['name' => 'assign role permission']);
+        Permission::create(['name' => 'remove role permission']);
+
+        Permission::create(['name' => 'assign user role']);
+        Permission::create(['name' => 'remove user role']);
+
+        $role = Role::create(['name' => 'admin'])
+            ->givePermissionTo(['create role', 'delete role', 'create permission', 'delete permission', 'assign role permission', 'remove role permission', 'assign user role', 'remove user role']);
 
         $user->assignRole($role);
     }

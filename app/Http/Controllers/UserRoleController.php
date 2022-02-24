@@ -8,6 +8,13 @@ use Spatie\Permission\Models\Role;
 
 class UserRoleController extends Controller
 {
+    public function index()
+    {
+        $users= User::with(['roles.permissions', 'permissions'])->get();
+
+        return response()->json(['users' => $users]);
+    }
+
     public function store(User $user, Role $role)
     {
         $user->assignRole($role);

@@ -29,6 +29,8 @@
             @auth
                 <div class="hidden md:block">
                     <div class="ml-4 flex items-center md:ml-6">
+                        <a href="{{ route('admin.index') }}"
+                            class="px-3 py-2 rounded-md text-sm font-medium {{ Route::is('admin.index') ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }}">Admin</a>
                         <button type="button"
                             class="bg-gray-800 p-1 rounded-full text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
                             <span class="sr-only">View notifications</span>
@@ -41,7 +43,7 @@
                         </button>
 
                         <!-- Profile dropdown -->
-                        <div class="ml-3 relative" x-data="{open : false}">
+                        <div class="ml-3 relative" x-data="{open : false}" x-on:click.away="open = false">
                             <div>
                                 <button type="button" x-on:click="open=!open"
                                     class="max-w-xs bg-gray-800 rounded-full flex items-center text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
@@ -53,7 +55,7 @@
                                 </button>
                             </div>
 
-                            <div class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+                            <div class="z-10 origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
                                 role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabindex="-1"
                                 x-show="open" x-transition:enter="transition ease-out duration-100"
                                 x-transiiton:enter-start="transform opacity-0 scale-100"
@@ -72,8 +74,9 @@
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
 
-                                    <a class="block px-4 py-2 text-sm text-gray-700" href="route('logout')" onclick="event.preventDefault();
-                                                                            this.closest('form').submit();">
+                                    <a class="block px-4 py-2 text-sm text-gray-700" href="route('logout')"
+                                        onclick="event.preventDefault();
+                                                                                            this.closest('form').submit();">
                                         {{ __('Sign out') }}
                                     </a>
                                 </form>
@@ -174,7 +177,7 @@
 
                         <a class="block px-3 py-2 rounded-md text-base font-medium text-gray-400 hover:text-white hover:bg-gray-700"
                             href="route('logout')" onclick="event.preventDefault();
-                                                                    this.closest('form').submit();">
+                                                                                    this.closest('form').submit();">
                             {{ __('Sign out') }}
                         </a>
                     </form>

@@ -22,8 +22,24 @@ import { createApp } from "vue";
 const app = createApp({});
 
 app.component("quiz-view", require("../components/QuizView.vue").default);
-app.component("quiz-settings", require("../components/QuizSettings.vue").default);
+app.component(
+  "quiz-settings",
+  require("../components/QuizSettings.vue").default
+);
 app.component("modal", require("../components/Modal.vue").default);
 app.component("flash", require("../components/Flash.vue").default);
+app.component("role", require("../components/admin/Role.vue").default);
+app.component(
+  "permission",
+  require("../components/admin/Permission.vue").default
+);
+app.component(
+  "role-permission",
+  require("../components/admin/RolePermission.vue").default
+);
+app.component(
+  "user-role-permission",
+  require("../components/admin/UserRolePermission.vue").default
+);
 
 app.mount("#app");

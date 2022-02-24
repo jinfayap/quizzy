@@ -53,3 +53,28 @@ Route::delete('/role/{role}/permission/{permission}', [RolePermissionController:
 
 Route::post('/user/{user}/role/{role}', [UserRoleController::class, 'store'])->middleware('permission:assign user role');
 Route::delete('/user/{user}/role/{role}', [UserRoleController::class, 'destroy'])->middleware('permission:remove user role');
+
+Route::get('/admin', function () {
+    return view('admin.index');
+})->name('admin.index');
+
+Route::get('/admin/role', function () {
+    return view('admin.role');
+})->name('admin.role');
+
+Route::get('/admin/permission', function () {
+    return view('admin.permission');
+})->name('admin.permission');
+
+Route::get('/admin/role-permission', function () {
+    return view('admin.role-permission');
+})->name('admin.role-permission');
+
+Route::get('/admin/user-role-permission', function () {
+    return view('admin.user-role-permission');
+})->name('admin.user-role-permission');
+
+Route::get('/api/role', [RoleController::class, 'index']);
+Route::get('/api/permission', [PermissionController::class, 'index']);
+Route::get('/api/role-permission', [RolePermissionController::class, 'index']);
+Route::get('/api/user-role-permission', [UserRoleController::class, 'index']);
