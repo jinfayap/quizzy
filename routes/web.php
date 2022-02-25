@@ -42,39 +42,39 @@ Route::patch('/quiz/{quiz}/question/{question}', [QuestionController::class, 'up
 Route::delete('/quiz/{quiz}/question/{question}', [QuestionController::class, 'destroy'])->middleware('auth');
 
 
-Route::post('/role', [RoleController::class, 'store'])->middleware('permission:create role');
-Route::delete('/role/{role}', [RoleController::class, 'destroy'])->middleware('permission:delete role');
+Route::post('/role', [RoleController::class, 'store'])->middleware(['auth', 'permission:create role']);
+Route::delete('/role/{role}', [RoleController::class, 'destroy'])->middleware(['auth', 'permission:delete role']);
 
-Route::post('/permission', [PermissionController::class, 'store'])->middleware('permission:create permission');
-Route::delete('/permission/{permission}', [PermissionController::class, 'destroy'])->middleware('permission:delete permission');
+Route::post('/permission', [PermissionController::class, 'store'])->middleware(['auth', 'permission:create permission']);
+Route::delete('/permission/{permission}', [PermissionController::class, 'destroy'])->middleware(['auth', 'permission:delete permission']);
 
-Route::post('/role/{role}/permission/{permission}', [RolePermissionController::class, 'store'])->middleware('permission:assign role permission');
-Route::delete('/role/{role}/permission/{permission}', [RolePermissionController::class, 'destroy'])->middleware('permission:remove role permission');
+Route::post('/role/{role}/permission/{permission}', [RolePermissionController::class, 'store'])->middleware(['auth', 'permission:assign role permission']);
+Route::delete('/role/{role}/permission/{permission}', [RolePermissionController::class, 'destroy'])->middleware(['auth', 'permission:remove role permission']);
 
-Route::post('/user/{user}/role/{role}', [UserRoleController::class, 'store'])->middleware('permission:assign user role');
-Route::delete('/user/{user}/role/{role}', [UserRoleController::class, 'destroy'])->middleware('permission:remove user role');
+Route::post('/user/{user}/role/{role}', [UserRoleController::class, 'store'])->middleware(['auth', 'permission:assign user role']);
+Route::delete('/user/{user}/role/{role}', [UserRoleController::class, 'destroy'])->middleware(['auth', 'permission:remove user role']);
 
 Route::get('/admin', function () {
     return view('admin.index');
-})->name('admin.index');
+})->middleware(['auth', 'permission:view admin panel'])->name('admin.index');
 
 Route::get('/admin/role', function () {
     return view('admin.role');
-})->name('admin.role');
+})->middleware(['auth', 'permission:view admin panel'])->name('admin.role');
 
 Route::get('/admin/permission', function () {
     return view('admin.permission');
-})->name('admin.permission');
+})->middleware(['auth', 'permission:view admin panel'])->name('admin.permission');
 
 Route::get('/admin/role-permission', function () {
     return view('admin.role-permission');
-})->name('admin.role-permission');
+})->middleware(['auth', 'permission:view admin panel'])->name('admin.role-permission');
 
 Route::get('/admin/user-role-permission', function () {
     return view('admin.user-role-permission');
-})->name('admin.user-role-permission');
+})->middleware(['auth', 'permission:view admin panel'])->name('admin.user-role-permission');
 
-Route::get('/api/role', [RoleController::class, 'index']);
-Route::get('/api/permission', [PermissionController::class, 'index']);
-Route::get('/api/role-permission', [RolePermissionController::class, 'index']);
-Route::get('/api/user-role-permission', [UserRoleController::class, 'index']);
+Route::get('/api/role', [RoleController::class, 'index'])->middleware(['permission:view api']);
+Route::get('/api/permission', [PermissionController::class, 'index'])->middleware(['permission:view api']);
+Route::get('/api/role-permission', [RolePermissionController::class, 'index'])->middleware(['permission:view api']);
+Route::get('/api/user-role-permission', [UserRoleController::class, 'index'])->middleware(['permission:view api']);

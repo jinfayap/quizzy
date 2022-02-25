@@ -42,6 +42,13 @@ class RolePermissionTest extends TestCase
     }
 
     /** @test */
+    public function guest_cannot_add_new_role()
+    {
+        $this->post('/role', $attribute = ['name' => 'educator'])->assertRedirect(route('login'));
+        $this->assertDatabaseMissing('roles', $attribute);
+    }
+
+    /** @test */
     public function only_unique_role_can_be_created()
     {
         $user = $this->signIn();
@@ -77,6 +84,28 @@ class RolePermissionTest extends TestCase
         $this->assertDatabaseCount('roles', 2);
 
         $this->delete("/role/{$roleToDelete->getRouteKey()}");
+
+        $this->assertDatabaseCount('roles', 1);
+    }
+
+    /** @test */
+    public function user_without_delete_role_permission_cannot_delete_role()
+    {
+        $user = $this->signIn();
+
+        $role = Role::create(['name' => 'admin']);
+
+        $this->delete("/role/{$role->getRouteKey()}")->assertStatus(403);
+
+        $this->assertDatabaseCount('roles', 1);
+    }
+
+    /** @test */
+    public function guest_canot_delete_role()
+    {
+        $role = Role::create(['name' => 'admin']);
+
+        $this->delete("/role/{$role->getRouteKey()}")->assertRedirect(route('login'));
 
         $this->assertDatabaseCount('roles', 1);
     }
@@ -122,6 +151,24 @@ class RolePermissionTest extends TestCase
     }
 
     /** @test */
+    public function user_without_add_permission_cannot_create_new_permission()
+    {
+        $user = $this->signIn();
+
+        $this->post('/permission', $attribute = ['name' => 'delete permission'])->assertStatus(403);
+
+        $this->assertDatabaseMissing('permissions', $attribute);
+    }
+
+    /** @test */
+    public function guest_cannot_create_new_permission()
+    {
+        $this->post('/permission', $attribute = ['name' => 'delete permission'])->assertRedirect(route('login'));
+
+        $this->assertDatabaseMissing('permissions', $attribute);
+    }
+
+    /** @test */
     public function only_unique_permission_can_be_created()
     {
         $user = $this->signIn();
@@ -157,6 +204,28 @@ class RolePermissionTest extends TestCase
         $this->assertDatabaseCount('permissions', 2);
 
         $this->delete("/permission/{$permissionToDelete->getRouteKey()}");
+
+        $this->assertDatabaseCount('permissions', 1);
+    }
+
+    /** @test */
+    public function user_without_delete_permission_cannot_delete_permission()
+    {
+        $user = $this->signIn();
+
+        $permission = Permission::create(['name' => 'delete permission']);
+
+        $this->delete("/permission/{$permission->getRouteKey()}")->assertStatus(403);
+
+        $this->assertDatabaseCount('permissions', 1);
+    }
+
+    /** @test */
+    public function guest_cannot_delete_permission()
+    {
+        $permission = Permission::create(['name' => 'delete permission']);
+
+        $this->delete("/permission/{$permission->getRouteKey()}")->assertRedirect(route('login'));
 
         $this->assertDatabaseCount('permissions', 1);
     }
@@ -206,6 +275,36 @@ class RolePermissionTest extends TestCase
     }
 
     /** @test */
+    public function user_without_assign_role_permission_cannot_assign_permission_to_role()
+    {
+        $user = $this->signIn();
+
+        $role = Role::create(['name' => 'admin']);
+
+        $anotherPermission = Permission::create(['name' => 'remove role permission']);
+
+        $user->assignRole($role);
+
+        $this->assertDatabaseCount('role_has_permissions', 0);
+
+        $this->post("/role/{$role->getRouteKey()}/permission/{$anotherPermission->getRouteKey()}");
+
+        $this->assertDatabaseCount('role_has_permissions', 0);
+    }
+
+    /** @test */
+    public function guest_cannot_assign_permission_to_role()
+    {
+        $role = Role::create(['name' => 'admin']);
+
+        $anotherPermission = Permission::create(['name' => 'remove role permission']);
+
+        $this->post("/role/{$role->getRouteKey()}/permission/{$anotherPermission->getRouteKey()}")->assertRedirect(route('login'));
+
+        $this->assertDatabaseCount('role_has_permissions', 0);
+    }
+
+    /** @test */
     public function user_with_remove_role_permission_can_remove_permission_from_role()
     {
         $user = $this->signIn();
@@ -230,7 +329,43 @@ class RolePermissionTest extends TestCase
     }
 
     /** @test */
-    public function user_with_assign_role_permission_can_assign_role_to_another_user()
+    public function user_without_remove_role_permission_cannot_remove_permission_from_role()
+    {
+        $user = $this->signIn();
+
+        $role = Role::create(['name' => 'admin']);
+
+        $anotherPermission = Permission::create(['name' => 'assign role permission']);
+
+        $role->givePermissionTo($anotherPermission);
+
+        $user->assignRole($role);
+
+        $this->assertDatabaseCount('role_has_permissions', 1);
+
+        $this->delete("/role/{$role->getRouteKey()}/permission/{$anotherPermission->getRouteKey()}")->assertStatus(403);
+
+        $this->assertDatabaseCount('role_has_permissions', 1);
+    }
+
+    /** @test */
+    public function guest_cannot_remove_permission_from_role()
+    {
+        $role = Role::create(['name' => 'admin']);
+
+        $anotherPermission = Permission::create(['name' => 'assign role permission']);
+
+        $role->givePermissionTo($anotherPermission);
+
+        $this->assertDatabaseCount('role_has_permissions', 1);
+
+        $this->delete("/role/{$role->getRouteKey()}/permission/{$anotherPermission->getRouteKey()}")->assertRedirect(route('login'));
+
+        $this->assertDatabaseCount('role_has_permissions', 1);
+    }
+
+    /** @test */
+    public function user_with_assign_user_role_permission_can_assign_role_to_another_user()
     {
         $user = $this->signIn();
 
@@ -254,7 +389,43 @@ class RolePermissionTest extends TestCase
     }
 
     /** @test */
-    public function user_with_remove_role_permission_can_remove_role_from_another_user()
+    public function user_without_assign_user_role_permission_cannot_assign_role_to_another_user()
+    {
+        $user = $this->signIn();
+
+        $role = Role::create(['name' => 'admin']);
+
+        $user->assignRole($role);
+
+        $anotherUser = User::factory()->create();
+
+        $this->post("/user/{$anotherUser->getRouteKey()}/role/{$role->getRouteKey()}");
+
+        $this->assertDatabaseMissing('model_has_roles', [
+            'role_id' => $role->id,
+            'model_id' => $anotherUser->id,
+            'model_type' => get_class($anotherUser)
+        ]);
+    }
+
+    /** @test */
+    public function guest_cannot_assign_role_to_another_user()
+    {
+        $role = Role::create(['name' => 'admin']);
+
+        $anotherUser = User::factory()->create();
+
+        $this->post("/user/{$anotherUser->getRouteKey()}/role/{$role->getRouteKey()}")->assertRedirect(route('login'));
+
+        $this->assertDatabaseMissing('model_has_roles', [
+            'role_id' => $role->id,
+            'model_id' => $anotherUser->id,
+            'model_type' => get_class($anotherUser)
+        ]);
+    }
+
+    /** @test */
+    public function user_with_remove_user_role_permission_can_remove_role_from_another_user()
     {
         $user = $this->signIn();
 
@@ -283,5 +454,98 @@ class RolePermissionTest extends TestCase
             'model_id' => $anotherUser->id,
             'model_type' => get_class($anotherUser)
         ]);
+    }
+
+    /** @test */
+    public function user_without_remove_user_role_permission_cannot_remove_role_from_another_user()
+    {
+        $user = $this->signIn();
+
+        $role = Role::create(['name' => 'admin']);
+
+        $user->assignRole($role);
+
+        $anotherUser = User::factory()->create();
+
+        $anotherUser->assignRole($role);
+
+        $this->assertDatabaseHas('model_has_roles', [
+            'role_id' => $role->id,
+            'model_id' => $anotherUser->id,
+            'model_type' => get_class($anotherUser)
+        ]);
+
+        $this->delete("/user/{$anotherUser->getRouteKey()}/role/{$role->getRouteKey()}")->assertStatus(403);
+
+        $this->assertDatabaseHas('model_has_roles', [
+            'role_id' => $role->id,
+            'model_id' => $anotherUser->id,
+            'model_type' => get_class($anotherUser)
+        ]);
+    }
+
+    /** @test */
+    public function guest_cannot_remove_role_from_another_user()
+    {
+        $role = Role::create(['name' => 'admin']);
+
+        $anotherUser = User::factory()->create();
+
+        $anotherUser->assignRole($role);
+
+        $this->assertDatabaseHas('model_has_roles', [
+            'role_id' => $role->id,
+            'model_id' => $anotherUser->id,
+            'model_type' => get_class($anotherUser)
+        ]);
+
+        $this->delete("/user/{$anotherUser->getRouteKey()}/role/{$role->getRouteKey()}")->assertRedirect(route('login'));
+
+        $this->assertDatabaseHas('model_has_roles', [
+            'role_id' => $role->id,
+            'model_id' => $anotherUser->id,
+            'model_type' => get_class($anotherUser)
+        ]);
+    }
+
+    /** @test */
+    public function guest_cannot_vist_any_admin_panel_pages()
+    {
+        $this->get('/admin')->assertRedirect(route('login'));
+        $this->get('/admin/role')->assertRedirect(route('login'));
+        $this->get('/admin/permission')->assertRedirect(route('login'));
+        $this->get('/admin/role-permission')->assertRedirect(route('login'));
+        $this->get('/admin/user-role-permission')->assertRedirect(route('login'));
+    }
+
+    /** @test */
+    public function user_without_view_admin_panel_cannot_visit_any_admin_panel_pages()
+    {
+        $this->signIn();
+        $this->get('/admin')->assertStatus(403);
+        $this->get('/admin/role')->assertStatus(403);
+        $this->get('/admin/permission')->assertStatus(403);
+        $this->get('/admin/role-permission')->assertStatus(403);
+        $this->get('/admin/user-role-permission')->assertStatus(403);
+    }
+
+    /** @test */
+    public function guest_cannot_vist_any_api_pages()
+    {
+        $this->get('/api/role')->assertStatus(403);
+        $this->get('/api/permission')->assertStatus(403);
+        $this->get('/api/role-permission')->assertStatus(403);
+        $this->get('/api/user-role-permission')->assertStatus(403);
+    }
+
+    /** @test */
+    public function user_cannot_vist_any_api_pages()
+    {
+        $user = $this->signIn();
+
+        $this->get('/api/role')->assertStatus(403);
+        $this->get('/api/permission')->assertStatus(403);
+        $this->get('/api/role-permission')->assertStatus(403);
+        $this->get('/api/user-role-permission')->assertStatus(403);
     }
 }

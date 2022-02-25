@@ -29,8 +29,10 @@
             @auth
                 <div class="hidden md:block">
                     <div class="ml-4 flex items-center md:ml-6">
-                        <a href="{{ route('admin.index') }}"
-                            class="px-3 py-2 rounded-md text-sm font-medium {{ Route::is('admin.index') ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }}">Admin</a>
+                        @can('view admin panel')
+                            <a href="{{ route('admin.index') }}"
+                                class="px-3 py-2 rounded-md text-sm font-medium {{ Route::is('admin.index') ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }}">Admin</a>
+                        @endcan
                         <button type="button"
                             class="bg-gray-800 p-1 rounded-full text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
                             <span class="sr-only">View notifications</span>
@@ -76,7 +78,7 @@
 
                                     <a class="block px-4 py-2 text-sm text-gray-700" href="route('logout')"
                                         onclick="event.preventDefault();
-                                                                                            this.closest('form').submit();">
+                                                                                                this.closest('form').submit();">
                                         {{ __('Sign out') }}
                                     </a>
                                 </form>
@@ -177,7 +179,7 @@
 
                         <a class="block px-3 py-2 rounded-md text-base font-medium text-gray-400 hover:text-white hover:bg-gray-700"
                             href="route('logout')" onclick="event.preventDefault();
-                                                                                    this.closest('form').submit();">
+                                                                                        this.closest('form').submit();">
                             {{ __('Sign out') }}
                         </a>
                     </form>
