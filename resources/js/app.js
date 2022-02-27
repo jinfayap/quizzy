@@ -22,6 +22,7 @@ import { createApp } from "vue";
 const app = createApp({});
 
 app.component("quiz-view", require("../components/QuizView.vue").default);
+app.component("test-view", require("../components/TestView.vue").default);
 app.component(
   "quiz-settings",
   require("../components/QuizSettings.vue").default

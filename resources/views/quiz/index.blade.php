@@ -58,6 +58,8 @@
                         <span class="ml-2 hidden lg:block">Public</span></span>
                     <span class="font-thin text-xs">1 day ago</span>
                 </div>
+
+                <a href="{{ route('test.show', $quiz) }}">Attempt</a>
             </div>
         @endforeach
 
