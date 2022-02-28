@@ -21,6 +21,11 @@ class Test extends Model
         return $this->belongsTo(Quiz::class);
     }
 
+    public function tester()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
     public function setResult()
     {
         $this->result = $this->testAnswers()->where('correct', true)->count();

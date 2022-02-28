@@ -26,4 +26,9 @@ class TestAnswer extends Model
 
         $this->save();
     }
+
+    public function test()
+    {
+        return $this->belongsTo(Test::class);
+    }
 }

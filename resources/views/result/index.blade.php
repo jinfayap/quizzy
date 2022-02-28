@@ -18,6 +18,11 @@
                                 <th scope="col"
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Taken on</th>
+                                @can('view test result')
+                                    <th scope="col"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        User</th>
+                                @endcan
                                 <th scope="col" class="relative px-6 py-3">
                                     <span class="sr-only">View</span>
                                 </th>
@@ -39,6 +44,17 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                         {{ $test->created_at->diffForHumans() }}
                                     </td>
+                                    @can('view test result')
+                                        <td class="px-6 py-4 whitespace-nowrap">
+
+                                            <div>
+                                                <div class="text-sm font-medium text-gray-900">{{ $test->tester->name }}
+                                                </div>
+                                                <div class="text-sm text-gray-500">{{ $test->tester->email }}</div>
+                                            </div>
+
+                                        </td>
+                                    @endcan
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <a href="{{ route('result.show', $test) }}"
                                             class="text-indigo-600 hover:text-indigo-900">View</a>

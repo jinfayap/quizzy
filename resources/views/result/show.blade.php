@@ -28,8 +28,8 @@
 
             @foreach ($test->testAnswers as $answer)
                 <div class="grid grid-cols-2 border p-2">
-                    <div class="border-r px-3">
-                        <h3 class="font-semibold text-lg text-gray-400 flex items-center">Question
+                    <div class="border-r px-3 flex flex-col">
+                        <h3 class="font-semibold text-lg text-gray-400 flex items-center ">Question
                             <span class="ml-2">
                                 @if ($answer->correct)
                                     <svg class="h-4 w-4 text-green-400" fill="none" viewBox="0 0 24 24"
@@ -47,7 +47,31 @@
                             </span>
 
                         </h3>
-                        {{ $answer->question->question_text }}
+
+                        <div>{{ $answer->question->question_text }}</div>
+
+                        @can('mark question')
+                            <div class="mt-auto">
+                                @if (!$answer->correct)
+                                    <form method="POST" action="{{ route('answer.update', $answer) }}">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button class="px-2 py-1 bg-green-400 hover:bg-green-500 text-white rounded">
+                                            Mark as correct
+                                        </button>
+                                    </form>
+                                @else
+                                    <form method="POST" action="{{ route('answer.destroy', $answer) }}">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button class="px-2 py-1 bg-red-400 hover:bg-red-500 text-white rounded">
+                                            Mark as wrong
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
+                        @endcan
+
                     </div>
 
                     <div class="border-l px-3">
