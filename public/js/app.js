@@ -23023,7 +23023,6 @@ __webpack_require__.r(__webpack_exports__);
   methods: {
     storeAnswer: function storeAnswer(id, answer) {
       this.answers[id] = answer;
-      console.log(this.answers);
     },
     submit: function submit() {
       var _this2 = this;
@@ -23031,10 +23030,9 @@ __webpack_require__.r(__webpack_exports__);
       axios.post("/test/quiz/".concat(this.quiz.id), {
         answers: this.answers
       }).then(function (response) {
-        _this2.$refs.submitTest.isOpen = false; // Do a redirect to the result page
-        // Temporary redirect to /quiz
-
-        location.href = "/quiz";
+        _this2.$refs.submitTest.isOpen = false;
+        var testId = response.data.test.id;
+        location.href = "/result/test/" + testId;
       })["catch"](function (error) {
         console.log(error);
       });

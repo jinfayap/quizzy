@@ -6,6 +6,7 @@ use App\Http\Controllers\QuizController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\RolePermissionController;
 use App\Http\Controllers\TestController;
+use App\Http\Controllers\TestResultController;
 use App\Http\Controllers\UserRoleController;
 use Illuminate\Support\Facades\Route;
 
@@ -82,3 +83,5 @@ Route::get('/api/user-role-permission', [UserRoleController::class, 'index'])->m
 
 Route::get('/test/quiz/{quiz}', [TestController::class, 'show'])->name('test.show');
 Route::post('/test/quiz/{quiz}', [TestController::class, 'store'])->name('test.store');
+
+Route::get('/result/test/{test}', [TestResultController::class, 'show'])->name('result.show');

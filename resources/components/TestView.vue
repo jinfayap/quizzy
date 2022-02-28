@@ -74,7 +74,6 @@ export default {
   methods: {
     storeAnswer(id, answer) {
       this.answers[id] = answer;
-      console.log(this.answers);
     },
 
     submit() {
@@ -83,9 +82,9 @@ export default {
         .then((response) => {
           this.$refs.submitTest.isOpen = false;
 
-          // Do a redirect to the result page
-          // Temporary redirect to /quiz
-          location.href = "/quiz";
+          const testId = response.data.test.id;
+
+          location.href = "/result/test/" + testId;
         })
         .catch((error) => {
           console.log(error);

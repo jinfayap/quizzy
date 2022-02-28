@@ -52,5 +52,11 @@ class TestController extends Controller
                 }
             }
         }
+
+        $test->setResult();
+
+        if (request()->expectsJson()) {
+            return response()->json(['test' => $test]);
+        }
     }
 }
