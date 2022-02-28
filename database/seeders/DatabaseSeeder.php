@@ -88,23 +88,39 @@ class DatabaseSeeder extends Seeder
             'more_info_link' => '',
         ]);
 
+        $permissionByRole = [
+            'admin' => [
+                'create role',
+                'delete role',
+                'create permission',
+                'delete permission',
+                'assign role permission',
+                'remove role permission',
+                'assign user role',
+                'remove user role',
+                'view admin panel',
+                'view api'],
+            'educator' => [
+                'create quiz',
+                'delete quiz',
+                'update quiz',
+                'create question',
+                'delete question',
+                'update question',
+                'mark question',
+                'view test result'
+            ],
+        ];
 
-        // Permission
-        Permission::create(['name' => 'create role']);
-        Permission::create(['name' => 'delete role']);
+        foreach ($permissionByRole as $role => $permissions) {
+            foreach ($permissions as $permission) {
+                Permission::create(['name' => $permission]);
+            }
 
-        Permission::create(['name' => 'create permission']);
-        Permission::create(['name' => 'delete permission']);
+            $role = Role::create(['name' => $role])
+                ->givePermissionTo($permissions);
+        }
 
-        Permission::create(['name' => 'assign role permission']);
-        Permission::create(['name' => 'remove role permission']);
-
-        Permission::create(['name' => 'assign user role']);
-        Permission::create(['name' => 'remove user role']);
-
-        $role = Role::create(['name' => 'admin'])
-            ->givePermissionTo(['create role', 'delete role', 'create permission', 'delete permission', 'assign role permission', 'remove role permission', 'assign user role', 'remove user role']);
-
-        $user->assignRole($role);
+        $user->assignRole('admin');
     }
 }
