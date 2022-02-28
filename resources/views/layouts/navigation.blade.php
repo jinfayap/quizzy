@@ -16,8 +16,8 @@
                             <a href="{{ route('quiz.index') }}"
                                 class="px-3 py-2 rounded-md text-sm font-medium {{ Route::is('quiz.index') ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }}">Quiz</a>
 
-                            <a href="#"
-                                class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Result</a>
+                            <a href="{{ route('result.index') }}"
+                                class="px-3 py-2 rounded-md text-sm font-medium {{ Route::is('result.index') ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }}">Result</a>
 
                             <a href="#"
                                 class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Leaderboard</a>
@@ -78,7 +78,7 @@
 
                                     <a class="block px-4 py-2 text-sm text-gray-700" href="route('logout')"
                                         onclick="event.preventDefault();
-                                                                                                this.closest('form').submit();">
+                                                                                                                        this.closest('form').submit();">
                                         {{ __('Sign out') }}
                                     </a>
                                 </form>
@@ -137,8 +137,8 @@
                 <a href="{{ route('quiz.index') }}"
                     class="block px-3 py-2 rounded-md text-base font-medium {{ Route::is('quiz.index') ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }}">Quiz</a>
 
-                <a href="#"
-                    class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Result</a>
+                <a href="{{ route('result.index') }}"
+                    class="block px-3 py-2 rounded-md text-base font-medium {{ Route::is('result.index') ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }}">Result</a>
 
                 <a href="#"
                     class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Leaderboard</a>
@@ -178,8 +178,9 @@
                         @csrf
 
                         <a class="block px-3 py-2 rounded-md text-base font-medium text-gray-400 hover:text-white hover:bg-gray-700"
-                            href="route('logout')" onclick="event.preventDefault();
-                                                                                        this.closest('form').submit();">
+                            href="route('logout')"
+                            onclick="event.preventDefault();
+                                                                                                                this.closest('form').submit();">
                             {{ __('Sign out') }}
                         </a>
                     </form>

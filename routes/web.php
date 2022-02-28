@@ -84,4 +84,5 @@ Route::get('/api/user-role-permission', [UserRoleController::class, 'index'])->m
 Route::get('/test/quiz/{quiz}', [TestController::class, 'show'])->name('test.show');
 Route::post('/test/quiz/{quiz}', [TestController::class, 'store'])->name('test.store');
 
+Route::get('/result/test', [TestResultController::class, 'index'])->name('result.index');
 Route::get('/result/test/{test}', [TestResultController::class, 'show'])->name('result.show');
