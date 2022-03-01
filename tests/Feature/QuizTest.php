@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Quiz;
 use App\Models\User;
+use Facades\Tests\Factories\UserFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -25,13 +26,15 @@ class QuizTest extends TestCase
     /** @test */
     public function authenticated_user_can_create_new_quiz()
     {
-        $user = $this->signIn();
+        $user = UserFactory::withRole('educator')
+            ->withPermissions(['create quiz'])
+            ->create();
 
         $quiz = Quiz::factory()->raw([
             'user_id' => $user->id
         ]);
 
-        $this->post("/quiz", $quiz);
+        $this->actingAs($user)->post("/quiz", $quiz);
 
         $this->assertDatabaseHas('quizzes', $quiz);
     }
@@ -67,6 +70,8 @@ class QuizTest extends TestCase
 
         $nonOwner = $this->signIn();
 
+        $this->get("/quiz/{$quiz->getRouteKey()}/edit")->assertStatus(403);
+
         $this->patch("/quiz/{$quiz->getRouteKey()}", $attributes = [
             'title' => 'title  changed',
             'description' => 'description changed',
@@ -87,6 +92,8 @@ class QuizTest extends TestCase
             'description' => 'quiz description',
             'duration' => 20
         ]);
+
+        $this->get("/quiz/{$quiz->getRouteKey()}/edit")->assertStatus(200);
 
         $this->patch("/quiz/{$quiz->getRouteKey()}", $attributes = [
             'title' => 'title  changed',

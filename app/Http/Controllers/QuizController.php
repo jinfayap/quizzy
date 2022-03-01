@@ -4,18 +4,23 @@ namespace App\Http\Controllers;
 
 use App\Models\Quiz;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class QuizController extends Controller
 {
     public function index()
     {
-        $quizzes = Quiz::latest()->get();
+        $quizzes = Quiz::latest()->where('user_id', auth()->id())->get();
 
         return view('quiz.index', compact('quizzes'));
     }
 
     public function show(Quiz $quiz)
     {
+        if ($quiz->user_id != auth()->id()) {
+            abort(403);
+        }
+
         $quiz->loadCount('questions')->load('creator');
 
         return view('quiz.show', compact('quiz'));
@@ -23,11 +28,19 @@ class QuizController extends Controller
 
     public function create()
     {
+        if (!Gate::forUser(auth()->user())->allows('create quiz')) {
+            abort(403);
+        }
+
         return view('quiz.create');
     }
 
     public function store()
     {
+        if (!Gate::forUser(auth()->user())->allows('create quiz')) {
+            abort(403);
+        }
+
         $attributes = request()->validate([
             'title' => ['required'],
             'description' => ['nullable'],
@@ -43,6 +56,10 @@ class QuizController extends Controller
 
     public function edit(Quiz $quiz)
     {
+        if ($quiz->user_id != auth()->id()) {
+            abort(403);
+        }
+
         $quiz->load('questions');
 
         return view('quiz.edit', compact('quiz'));

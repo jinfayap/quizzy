@@ -121,6 +121,50 @@
           </button>
         </div>
       </section>
+
+      <section class="mt-3">
+        <h2 class="font-semibold text-lg mb-3">Access to attempt quiz!</h2>
+
+        <form @submit.prevent="invite" class="space-y-2">
+          <div>
+            <label class="text-sm">User email</label>
+            <input
+              type="text"
+              class="rounded w-full"
+              v-model="inviteForm.email"
+            />
+          </div>
+          <div>
+            <label class="text-sm">Start date</label>
+            <input
+              type="date"
+              class="rounded w-full"
+              v-model="inviteForm.start_date"
+            />
+          </div>
+          <div>
+            <label class="text-sm">End date</label>
+            <input
+              type="date"
+              class="rounded w-full"
+              v-model="inviteForm.end_date"
+            />
+          </div>
+
+          <button
+            class="w-full mt-3 lg:ml-1 lg:mt-0 bg-blue-400 hover:bg-blue-500 hover:shadow-md px-4 py-2 text-white rounded-md"
+            type="submit"
+          >
+            Give access
+          </button>
+
+          <div v-if="errors" class="mt-2 bg-red-100 text-left px-4 py-2">
+            <span class="text-xs text-red-500 block" v-for="error in errors">
+              {{ error[0] }}
+            </span>
+          </div>
+        </form>
+      </section>
     </div>
   </div>
 </template>
@@ -133,6 +177,12 @@ export default {
   data() {
     return {
       quiz: JSON.parse(JSON.stringify(this.data)),
+      inviteForm: {
+        email: "",
+        start_date: "",
+        end_date: "",
+      },
+      errors: null,
     };
   },
 
@@ -145,6 +195,17 @@ export default {
         })
         .catch((error) => {
           console.log("Error in deleting the quiz");
+        });
+    },
+
+    invite() {
+      axios
+        .post(`/invite/quiz/${this.quiz.id}`, this.inviteForm)
+        .then((response) => {
+          console.log("success");
+        })
+        .catch((error) => {
+          this.errors = error.response.data.errors;
         });
     },
   },

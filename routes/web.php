@@ -9,6 +9,7 @@ use App\Http\Controllers\TestAnswerController;
 use App\Http\Controllers\TestController;
 use App\Http\Controllers\TestResultController;
 use App\Http\Controllers\UserRoleController;
+use App\Http\Controllers\UserTestController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -82,11 +83,14 @@ Route::get('/api/permission', [PermissionController::class, 'index'])->middlewar
 Route::get('/api/role-permission', [RolePermissionController::class, 'index'])->middleware(['permission:view api']);
 Route::get('/api/user-role-permission', [UserRoleController::class, 'index'])->middleware(['permission:view api']);
 
-Route::get('/test/quiz/{quiz}', [TestController::class, 'show'])->name('test.show');
-Route::post('/test/quiz/{quiz}', [TestController::class, 'store'])->name('test.store');
+Route::get('/test/quiz/{quiz}', [TestController::class, 'show'])->middleware(['auth'])->name('test.show');
+Route::post('/test/quiz/{quiz}', [TestController::class, 'store'])->middleware(['auth'])->name('test.store');
 
 Route::get('/result/test', [TestResultController::class, 'index'])->middleware(['auth'])->name('result.index');
 Route::get('/result/test/{test}', [TestResultController::class, 'show'])->middleware(['auth'])->name('result.show');
 
 Route::patch('/test-answer/{testAnswer}', [TestAnswerController::class, 'update'])->name('answer.update');
 Route::delete('/test-answer/{testAnswer}', [TestAnswerController::class, 'destroy'])->name('answer.destroy');
+
+Route::get('/user-test', [UserTestController::class, 'index'])->name('test.index');
+Route::post('/invite/quiz/{quiz}', [UserTestController::class, 'store']);

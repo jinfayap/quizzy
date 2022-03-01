@@ -5,6 +5,9 @@ namespace Tests\Feature;
 use App\Models\Question;
 use App\Models\Quiz;
 use App\Models\TestAnswer;
+use App\Models\User;
+use App\Models\UserTest;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -14,8 +17,57 @@ class AttemptQuizTest extends TestCase
     use RefreshDatabase;
 
     /** @test */
+    public function a_user_must_be_assigned_to_the_quiz_before_he_can_attempt_the_quiz()
+    {
+        $tester = User::factory()->create();
+
+        $quiz = Quiz::factory()->create();
+
+        $questionOne = Question::factory()->radio()->create([
+            'quiz_id' => $quiz->id,
+            'user_id' => $quiz->user_id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => json_encode(['one'])
+        ]);
+
+        $questionTwo = Question::factory()->radio()->create([
+            'quiz_id' => $quiz->id,
+            'user_id' => $quiz->user_id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => json_encode(['four'])
+        ]);
+
+
+        $this->actingAs($tester)->get("/test/quiz/{$quiz->getRouteKey()}")->assertStatus(403);
+
+        $user = $this->signIn();
+
+        $this->assertDatabaseCount('user_tests', 0);
+
+        $this->actingAs($user)->post("/invite/quiz/{$quiz->getRouteKey()}", [
+            'email' => $tester->email,
+        ])->assertStatus(200);
+
+        $this->assertDatabaseCount('user_tests', 1);
+
+        $this->actingAs($tester)->get(route('test.show', $quiz))->assertStatus(200);
+    }
+
+    /** @test */
     public function when_a_user_submits_the_answer_to_the_quiz_test_it_stores_the_answers()
     {
+        $user = $this->signIn();
+
         $quiz = Quiz::factory()->create();
 
         $questionOne = Question::factory()->radio()->create([
@@ -49,6 +101,193 @@ class AttemptQuizTest extends TestCase
 
         $this->assertDatabaseCount('tests', 1);
         $this->assertDatabaseCount('test_answers', 2);
+    }
+
+    /** @test */
+    public function when_a_user_submits_the_answer_to_the_quiz_test_it_also_update_the_attempt_date_on_user_testss()
+    {
+        $tester = $this->signIn();
+
+        $quiz = Quiz::factory()->create();
+
+        $questionOne = Question::factory()->radio()->create([
+            'quiz_id' => $quiz->id,
+            'user_id' => $quiz->user_id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => json_encode(['one'])
+        ]);
+
+        $questionTwo = Question::factory()->radio()->create([
+            'quiz_id' => $quiz->id,
+            'user_id' => $quiz->user_id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => json_encode(['four'])
+        ]);
+
+        UserTest::create([
+            'user_id' => $tester->id,
+            'quiz_id' => $quiz->id
+        ]);
+
+        $this->actingAs($tester)->post("/test/quiz/{$quiz->getRouteKey()}", ['answers' => [
+            1 => 'one',
+            2 => 'two',
+        ]]);
+
+        $userTest = UserTest::where('user_id', $tester->id)
+            ->where('quiz_id', $quiz->id)->first();
+
+        $this->assertNotNull($userTest->attempt_date);
+        $this->assertEquals(Carbon::now(), $userTest->attempt_date);
+    }
+
+    /** @test */
+    public function once_the_tester_has_attempt_the_test_he_cannot_attempt_again()
+    {
+        $tester = $this->signIn();
+
+        $quiz = Quiz::factory()->create();
+
+        $questionOne = Question::factory()->radio()->create([
+            'quiz_id' => $quiz->id,
+            'user_id' => $quiz->user_id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => json_encode(['one'])
+        ]);
+
+        $questionTwo = Question::factory()->radio()->create([
+            'quiz_id' => $quiz->id,
+            'user_id' => $quiz->user_id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => json_encode(['four'])
+        ]);
+
+        $userTest = UserTest::create([
+            'user_id' => $tester->id,
+            'quiz_id' => $quiz->id
+        ]);
+
+        $this->actingAs($tester)->get("/test/quiz/{$quiz->getRouteKey()}")->assertStatus(200);
+
+        $this->actingAs($tester)->post("/test/quiz/{$quiz->getRouteKey()}", ['answers' => [
+            1 => 'one',
+            2 => 'two',
+        ]]);
+
+        $this->actingAs($tester)->get("/test/quiz/{$quiz->getRouteKey()}")->assertStatus(403);
+    }
+
+    /** @test */
+    public function tester_cannot_attempt_the_quiz_if_the_date_does_not_falls_between_the_start_and_end_date()
+    {
+        $tester = $this->signIn();
+
+        $quiz = Quiz::factory()->create();
+
+        $questionOne = Question::factory()->radio()->create([
+            'quiz_id' => $quiz->id,
+            'user_id' => $quiz->user_id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => json_encode(['one'])
+        ]);
+
+        $questionTwo = Question::factory()->radio()->create([
+            'quiz_id' => $quiz->id,
+            'user_id' => $quiz->user_id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => json_encode(['four'])
+        ]);
+
+        $userTest = UserTest::create([
+            'user_id' => $tester->id,
+            'quiz_id' => $quiz->id,
+            'start_date' => Carbon::now()->subDay(4),
+            'end_date' => Carbon::now()->subDay()
+        ]);
+
+        $this->actingAs($tester)->get("/test/quiz/{$quiz->getRouteKey()}")->assertStatus(403);
+    }
+
+    /** @test */
+    public function the_first_valid_created_test_will_be_updated_if_the_user_attempts()
+    {
+        $tester = $this->signIn();
+
+        $quiz = Quiz::factory()->create();
+
+        $questionOne = Question::factory()->radio()->create([
+            'quiz_id' => $quiz->id,
+            'user_id' => $quiz->user_id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => json_encode(['one'])
+        ]);
+
+        $questionTwo = Question::factory()->radio()->create([
+            'quiz_id' => $quiz->id,
+            'user_id' => $quiz->user_id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => json_encode(['four'])
+        ]);
+
+        $userTestOne = UserTest::create([
+            'user_id' => $tester->id,
+            'quiz_id' => $quiz->id,
+            'start_date' => Carbon::now(),
+            'end_date' => Carbon::now()->addDays(3)
+        ]);
+
+        $userTestTwo = UserTest::create([
+            'user_id' => $tester->id,
+            'quiz_id' => $quiz->id,
+        ]);
+
+        $this->actingAs($tester)->post("/test/quiz/{$quiz->getRouteKey()}", ['answers' => [
+            1 => 'one',
+            2 => 'two',
+        ]]);
+
+        $this->assertNotNull($userTestOne->fresh()->attempt_date);
+        $this->assertNull($userTestTwo->fresh()->attempt_date);
     }
 
     /** @test */

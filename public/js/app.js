@@ -22878,7 +22878,13 @@ __webpack_require__.r(__webpack_exports__);
   },
   data: function data() {
     return {
-      quiz: JSON.parse(JSON.stringify(this.data))
+      quiz: JSON.parse(JSON.stringify(this.data)),
+      inviteForm: {
+        email: "",
+        start_date: "",
+        end_date: ""
+      },
+      errors: null
     };
   },
   methods: {
@@ -22887,6 +22893,15 @@ __webpack_require__.r(__webpack_exports__);
         location.href = "/quiz";
       })["catch"](function (error) {
         console.log("Error in deleting the quiz");
+      });
+    },
+    invite: function invite() {
+      var _this = this;
+
+      axios.post("/invite/quiz/".concat(this.quiz.id), this.inviteForm).then(function (response) {
+        console.log("success");
+      })["catch"](function (error) {
+        _this.errors = error.response.data.errors;
       });
     }
   }
@@ -24075,6 +24090,48 @@ var _hoisted_28 = [_hoisted_26, _hoisted_27];
 
 var _hoisted_29 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createStaticVNode)("<section class=\"mt-3\"><h2 class=\"font-semibold text-lg mb-3\">Add a collaborator!</h2><div class=\"lg:flex\"><input type=\"text\" class=\"rounded w-full\" placeholder=\"Email...\"><button class=\"w-full mt-3 lg:ml-1 lg:mt-0 lg:w-min bg-blue-400 hover:bg-blue-500 hover:shadow-md px-4 py-2 text-white rounded-md\"> Add </button></div></section>", 1);
 
+var _hoisted_30 = {
+  "class": "mt-3"
+};
+
+var _hoisted_31 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h2", {
+  "class": "font-semibold text-lg mb-3"
+}, "Access to attempt quiz!", -1
+/* HOISTED */
+);
+
+var _hoisted_32 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
+  "class": "text-sm"
+}, "User email", -1
+/* HOISTED */
+);
+
+var _hoisted_33 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
+  "class": "text-sm"
+}, "Start date", -1
+/* HOISTED */
+);
+
+var _hoisted_34 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
+  "class": "text-sm"
+}, "End date", -1
+/* HOISTED */
+);
+
+var _hoisted_35 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
+  "class": "w-full mt-3 lg:ml-1 lg:mt-0 bg-blue-400 hover:bg-blue-500 hover:shadow-md px-4 py-2 text-white rounded-md",
+  type: "submit"
+}, " Give access ", -1
+/* HOISTED */
+);
+
+var _hoisted_36 = {
+  key: 0,
+  "class": "mt-2 bg-red-100 text-left px-4 py-2"
+};
+var _hoisted_37 = {
+  "class": "text-xs text-red-500 block"
+};
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   var _component_modal = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("modal");
 
@@ -24121,7 +24178,44 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     "class": "flex items-center"
   }, _hoisted_28, 8
   /* PROPS */
-  , _hoisted_25)])]), _hoisted_29])]);
+  , _hoisted_25)])]), _hoisted_29, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("section", _hoisted_30, [_hoisted_31, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("form", {
+    onSubmit: _cache[4] || (_cache[4] = (0,vue__WEBPACK_IMPORTED_MODULE_0__.withModifiers)(function () {
+      return $options.invite && $options.invite.apply($options, arguments);
+    }, ["prevent"])),
+    "class": "space-y-2"
+  }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [_hoisted_32, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
+    type: "text",
+    "class": "rounded w-full",
+    "onUpdate:modelValue": _cache[1] || (_cache[1] = function ($event) {
+      return $data.inviteForm.email = $event;
+    })
+  }, null, 512
+  /* NEED_PATCH */
+  ), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $data.inviteForm.email]])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [_hoisted_33, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
+    type: "date",
+    "class": "rounded w-full",
+    "onUpdate:modelValue": _cache[2] || (_cache[2] = function ($event) {
+      return $data.inviteForm.start_date = $event;
+    })
+  }, null, 512
+  /* NEED_PATCH */
+  ), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $data.inviteForm.start_date]])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [_hoisted_34, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
+    type: "date",
+    "class": "rounded w-full",
+    "onUpdate:modelValue": _cache[3] || (_cache[3] = function ($event) {
+      return $data.inviteForm.end_date = $event;
+    })
+  }, null, 512
+  /* NEED_PATCH */
+  ), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $data.inviteForm.end_date]])]), _hoisted_35, $data.errors ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_36, [((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)($data.errors, function (error) {
+    return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", _hoisted_37, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(error[0]), 1
+    /* TEXT */
+    );
+  }), 256
+  /* UNKEYED_FRAGMENT */
+  ))])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)], 32
+  /* HYDRATE_EVENTS */
+  )])])]);
 }
 
 /***/ }),
