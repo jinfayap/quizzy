@@ -108,6 +108,7 @@ class DatabaseSeeder extends Seeder
                 'delete question',
                 'update question',
                 'mark question',
+                'view quiz',
                 'view test result'
             ],
         ];

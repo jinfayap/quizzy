@@ -1,7 +1,7 @@
 <template>
   <div class="grid grid-cols-12">
     <div class="col-span-8">
-      <section class="mr-2">
+      <!-- <section class="mr-2">
         <h2 class="font-bold text-center text-2xl">Quiz Information</h2>
 
         <div class="mt-2">
@@ -19,12 +19,89 @@
           <span>{{ quiz.duration }}</span>
         </div>
 
-        <hr class="mt-2" />
-      </section>
+        <div class="mt-2">
+          <span class="text-gray-500 text-sm mr-2">Public :</span>
+          <span>{{ quiz.public ? "Yes" : "No" }}</span>
+        </div>
+      </section> -->
 
-      <section class="mt-2">
-        <h2 class="font-bold text-2xl text-center">Quick Comments</h2>
-        <h2 class="font-semibold text-lg">WIP</h2>
+      <!-- Quiz Information -->
+      <section class="p-5 rounded-md">
+        <h2 class="font-bold text-center text-2xl">Basic Quiz Information</h2>
+
+        <div class="mt-2">
+          <label for="title" class="block text-gray-500 text-sm mb-1"
+            >Title :</label
+          >
+          <input
+            type="text"
+            name="title"
+            class="w-full rounded-md"
+            required
+            v-model="quiz.title"
+          />
+        </div>
+        <div class="mt-2">
+          <label
+            for="description"
+            class="block text-gray-500 text-sm text-uppercase mb-1"
+            >Description :</label
+          >
+          <textarea
+            name="description"
+            rows="3"
+            class="w-full rounded-md placeholder:text-sm min-h-[100px]"
+            placeholder="optional"
+            v-model="quiz.description"
+          ></textarea>
+        </div>
+        <div class="mt-2">
+          <label
+            for="description"
+            class="block text-gray-500 text-sm text-uppercase mb-1"
+            >Duration (Minutes) :
+          </label>
+          <input
+            type="text"
+            name="duration"
+            class="w-full rounded-md placeholder:text-sm"
+            placeholder="optional"
+            v-model="quiz.duration"
+          />
+        </div>
+
+        <div class="mt-2">
+          <label
+            for="public"
+            class="block text-gray-500 text-sm text-uppercase mb-1"
+            >Public :
+          </label>
+
+          <div>
+            <input type="radio" :value="0" v-model="quiz.public" />
+            <label for="two" class="ml-2">No</label>
+          </div>
+
+          <div>
+            <input type="radio" :value="1" v-model="quiz.public" />
+            <label for="one" class="ml-2">Yes</label>
+          </div>
+        </div>
+
+        <div v-if="quizError" class="mt-2 bg-red-100 text-left px-4 py-2">
+          <span class="text-xs text-red-500 block" v-for="error in quizError">
+            {{ error[0] }}
+          </span>
+        </div>
+
+        <div class="mt-4 flex justify-end">
+          <button
+            class="bg-blue-400 hover:bg-blue-500 hover:shadow-md px-4 py-2 text-white rounded-md"
+            @click="save"
+          >
+            Save
+          </button>
+        </div>
       </section>
     </div>
 
@@ -110,20 +187,8 @@
         </button>
       </section>
 
-      <section class="mt-3">
-        <h2 class="font-semibold text-lg mb-3">Add a collaborator!</h2>
-        <div class="lg:flex">
-          <input type="text" class="rounded w-full" placeholder="Email..." />
-          <button
-            class="w-full mt-3 lg:ml-1 lg:mt-0 lg:w-min bg-blue-400 hover:bg-blue-500 hover:shadow-md px-4 py-2 text-white rounded-md"
-          >
-            Add
-          </button>
-        </div>
-      </section>
-
-      <section class="mt-3">
-        <h2 class="font-semibold text-lg mb-3">Access to attempt quiz!</h2>
+      <section class="mt-3" v-if="!isPublic">
+        <h2 class="font-semibold text-lg mb-3">Invite User to take quiz</h2>
 
         <form @submit.prevent="invite" class="space-y-2">
           <div>
@@ -183,6 +248,8 @@ export default {
         end_date: "",
       },
       errors: null,
+      quizError: null,
+      isPublic: this.data.public,
     };
   },
 
@@ -206,6 +273,19 @@ export default {
         })
         .catch((error) => {
           this.errors = error.response.data.errors;
+        });
+    },
+
+    save() {
+      axios
+        .patch(`/quiz/${this.quiz.id}`, this.quiz)
+        .then((response) => {
+          flash("Quiz information updated");
+          this.isPublic = this.quiz.public;
+        })
+        .catch((error) => {
+          this.quizError = error.response.data.errors;
+          flash("Error in updating the quiz information", "danger");
         });
     },
   },

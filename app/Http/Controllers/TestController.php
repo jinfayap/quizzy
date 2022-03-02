@@ -12,7 +12,8 @@ class TestController extends Controller
 {
     public function show(Quiz $quiz)
     {
-        $test = UserTest::where('quiz_id', $quiz->id)
+        if (! $quiz->public) {
+            $test = UserTest::where('quiz_id', $quiz->id)
             ->where(function ($query) {
                 $query->where('start_date', '<=', Carbon::now())
                     ->where('end_date', '>=', Carbon::now())
@@ -27,10 +28,31 @@ class TestController extends Controller
             })
             ->get();
 
-        $testCount = $test->count();
+            $testCount = $test->count();
 
-        if ($testCount == 0) {
-            abort(403);
+            if ($testCount == 0) {
+                abort(403);
+            }
+            $test = UserTest::where('quiz_id', $quiz->id)
+        ->where(function ($query) {
+            $query->where('start_date', '<=', Carbon::now())
+                ->where('end_date', '>=', Carbon::now())
+                ->where('attempt_date', null)
+                ->where('user_id', auth()->id());
+        })
+        ->orWhere(function ($query) {
+            $query->where('start_date', '=', null)
+                ->where('end_date', '=', null)
+                ->where('attempt_date', null)
+                ->where('user_id', auth()->id());
+        })
+        ->get();
+
+            $testCount = $test->count();
+
+            if ($testCount == 0) {
+                abort(403);
+            }
         }
 
         $quiz->load('questions:id,quiz_id,question_text,options,question_type');
@@ -78,7 +100,8 @@ class TestController extends Controller
 
         $test->setResult();
 
-        $userTest = UserTest::where('quiz_id', $quiz->id)
+        if (! $quiz->public) {
+            $userTest = UserTest::where('quiz_id', $quiz->id)
          ->where(function ($query) {
              $query->where('start_date', '<=', Carbon::now())
                 ->where('end_date', '>=', Carbon::now())
@@ -92,7 +115,8 @@ class TestController extends Controller
                 ->where('user_id', auth()->id());
         })->first();
 
-        $userTest->update(['attempt_date' => Carbon::now()]);
+            $userTest->update(['attempt_date' => Carbon::now()]);
+        }
 
         if (request()->expectsJson()) {
             return response()->json(['test' => $test]);

@@ -1,65 +1,4 @@
 <template>
-  <!-- Quiz Information -->
-  <section class="bg-sky-200 p-5 rounded-md">
-    <h2 class="font-bold text-center text-2xl">Basic Quiz Information</h2>
-
-    <div class="mt-2">
-      <label for="title" class="block text-gray-500 text-sm mb-1"
-        >Title :</label
-      >
-      <input
-        type="text"
-        name="title"
-        class="w-full rounded-md"
-        required
-        v-model="quiz.title"
-      />
-    </div>
-    <div class="mt-2">
-      <label
-        for="description"
-        class="block text-gray-500 text-sm text-uppercase mb-1"
-        >Description :</label
-      >
-      <textarea
-        name="description"
-        rows="3"
-        class="w-full rounded-md placeholder:text-sm min-h-[100px]"
-        placeholder="optional"
-        v-model="quiz.description"
-      ></textarea>
-    </div>
-    <div class="mt-2">
-      <label
-        for="description"
-        class="block text-gray-500 text-sm text-uppercase mb-1"
-        >Duration (Minutes) :
-      </label>
-      <input
-        type="text"
-        name="duration"
-        class="w-full rounded-md placeholder:text-sm"
-        placeholder="optional"
-        v-model="quiz.duration"
-      />
-    </div>
-
-    <div v-if="quizError" class="mt-2 bg-red-100 text-left px-4 py-2">
-      <span class="text-xs text-red-500 block" v-for="error in quizError">
-        {{ error[0] }}
-      </span>
-    </div>
-
-    <div class="mt-4 flex justify-end">
-      <button
-        class="bg-blue-400 hover:bg-blue-500 hover:shadow-md px-4 py-2 text-white rounded-md"
-        @click="save"
-      >
-        Save
-      </button>
-    </div>
-  </section>
-
   <!-- Questions -->
   <section class="mt-4">
     <div class="flex justify-between">
@@ -157,7 +96,7 @@ export default {
         answer_explanation: "",
         more_info_link: "",
       },
-      quizError: null,
+
       errors: null,
     };
   },
@@ -178,19 +117,7 @@ export default {
     updateQuestion(index, data) {
       this.quiz.questions[index] = data;
     },
-    save() {
-      axios
-        .patch(`/quiz/${this.quiz.id}`, this.quiz)
-        .then((response) => {
-          flash("Quiz information updated");
-        })
-        .catch((error) => {
-          this.quizError = error.response.data.errors;
-          console.log(error.response.data.errors);
-          console.log(this.quizError);
-          flash("Error in updating the quiz information", "danger");
-        });
-    },
+
     submit() {
       axios
         .post(`/quiz/${this.quiz.id}/question`, this.question)

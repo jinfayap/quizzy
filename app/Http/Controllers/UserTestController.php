@@ -13,6 +13,8 @@ class UserTestController extends Controller
 {
     public function index()
     {
+        $publicTests = Quiz::where('public', true)->get();
+
         $tests = UserTest::where(function ($query) {
             $query->where('attempt_date', null)
                 ->where('user_id', auth()->id());
@@ -24,7 +26,7 @@ class UserTestController extends Controller
                 ->where('user_id', auth()->id());
         })->with(['quiz'])->get();
 
-        return view('test.index', compact('tests'));
+        return view('test.index', compact('tests', 'publicTests'));
     }
 
     public function store(Quiz $quiz)

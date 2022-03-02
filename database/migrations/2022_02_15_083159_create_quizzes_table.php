@@ -19,6 +19,7 @@ class CreateQuizzesTable extends Migration
             $table->string('title');
             $table->text('description')->nullable();
             $table->integer('duration')->nullable();
+            $table->boolean('public')->default(false);
             $table->timestamps();
         });
     }

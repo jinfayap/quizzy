@@ -52,7 +52,8 @@ class QuizTest extends TestCase
         $this->patch("/quiz/{$quiz->getRouteKey()}", $attributes = [
             'title' => 'title  changed',
             'description' => 'description changed',
-            'duration' => 30
+            'duration' => 30,
+            'public' => false
         ])->assertRedirect(route('login'));
 
         $this->assertDatabaseMissing('quizzes', $attributes);
@@ -75,7 +76,8 @@ class QuizTest extends TestCase
         $this->patch("/quiz/{$quiz->getRouteKey()}", $attributes = [
             'title' => 'title  changed',
             'description' => 'description changed',
-            'duration' => 30
+            'duration' => 30,
+            'public' => false
         ])->assertStatus(403);
 
         $this->assertDatabaseMissing('quizzes', $attributes);
@@ -98,7 +100,8 @@ class QuizTest extends TestCase
         $this->patch("/quiz/{$quiz->getRouteKey()}", $attributes = [
             'title' => 'title  changed',
             'description' => 'description changed',
-            'duration' => 30
+            'duration' => 30,
+            'public' => false
         ])->assertStatus(200);
 
         $this->assertDatabaseHas('quizzes', $attributes);

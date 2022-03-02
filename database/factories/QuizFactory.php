@@ -18,7 +18,8 @@ class QuizFactory extends Factory
             'user_id' => User::factory(),
             'title' => $this->faker->sentence(),
             'description' => $this->faker->paragraph(),
-            'duration' => $this->faker->numberBetween(30, 60)
+            'duration' => $this->faker->numberBetween(30, 60),
+            'public' => false,
         ];
     }
 }

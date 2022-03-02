@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Quiz;
+use App\Models\UserTest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
@@ -44,7 +45,8 @@ class QuizController extends Controller
         $attributes = request()->validate([
             'title' => ['required'],
             'description' => ['nullable'],
-            'duration' => ['nullable', 'integer']
+            'duration' => ['nullable', 'integer'],
+            'public' => ['required', 'boolean']
         ]);
 
         $attributes['user_id'] = auth()->id();
@@ -74,10 +76,16 @@ class QuizController extends Controller
         $attributes = request()->validate([
             'title' => ['required'],
             'description' => ['nullable'],
-            'duration' => ['nullable']
+            'duration' => ['nullable'],
+            'public' => ['required', 'boolean']
         ]);
 
         $quiz->update($attributes);
+
+        if ($quiz->public) {
+            UserTest::where('quiz_id', $quiz->id)
+            ->whereNull('attempt_date')->delete();
+        }
     }
 
     public function destroy(Quiz $quiz)

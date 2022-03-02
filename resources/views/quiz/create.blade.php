@@ -45,6 +45,30 @@
                     @enderror
                 </div>
 
+                <div class="mt-2">
+                    <label for="public" class="block text-gray-500 text-sm text-uppercase mb-1">Public :
+                    </label>
+
+                    <div>
+                        <input type="radio" name="public" class="rounded-md placeholder:text-sm" value="0"
+                            {{ old('public') == 0 ? 'checked' : '' }}>
+                        <label for="" class="ml-2">No</label>
+                    </div>
+
+
+                    <div>
+                        <input type="radio" name="public" class="rounded-md placeholder:text-sm" value="1"
+                            {{ old('public') == 1 ? 'checked' : '' }}>
+                        <label for="" class="ml-2">Yes</label>
+                    </div>
+
+                    @error('public')
+                        <p class="text-xs text-red-500 mt-1">
+                            {{ $message }}
+                        </p>
+                    @enderror
+                </div>
+
                 <div class="mt-4 flex justify-end">
                     <button
                         class="bg-blue-400 hover:bg-blue-500 hover:shadow-md px-4 py-2 text-white rounded-md">Create</button>

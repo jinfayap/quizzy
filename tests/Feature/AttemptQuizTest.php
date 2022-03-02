@@ -17,6 +17,111 @@ class AttemptQuizTest extends TestCase
     use RefreshDatabase;
 
     /** @test */
+    public function if_the_quiz_is_public_any_user_that_is_logged_in_can_access_and_submit()
+    {
+        $tester = User::factory()->create();
+
+        $quiz = Quiz::factory()->create([
+            'public' => true
+        ]);
+
+        $questionOne = Question::factory()->radio()->create([
+            'quiz_id' => $quiz->id,
+            'user_id' => $quiz->user_id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => json_encode(['one'])
+        ]);
+
+        $questionTwo = Question::factory()->radio()->create([
+            'quiz_id' => $quiz->id,
+            'user_id' => $quiz->user_id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => json_encode(['four'])
+        ]);
+
+        $this->actingAs($tester)->get("/test/quiz/{$quiz->getRouteKey()}")->assertStatus(200);
+
+        $this->post("/test/quiz/{$quiz->getRouteKey()}", ['answers' => [
+            1 => 'one',
+            2 => 'two',
+        ]]);
+
+        $this->assertDatabaseCount('tests', 1);
+        $this->assertDatabaseCount('test_answers', 2);
+    }
+
+    /** @test */
+    public function if_the_quiz_is_changed_to_public_the_user_assign_test_is_removed_if_not_attempted()
+    {
+        $this->withoutExceptionHandling();
+
+        $tester = User::factory()->create();
+
+        $owner = $this->signIn();
+
+        $quiz = Quiz::factory()->create([
+            'user_id' => $owner->id
+        ]);
+
+        $questionOne = Question::factory()->radio()->create([
+            'quiz_id' => $quiz->id,
+            'user_id' => $quiz->user_id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => json_encode(['one'])
+        ]);
+
+        $questionTwo = Question::factory()->radio()->create([
+            'quiz_id' => $quiz->id,
+            'user_id' => $quiz->user_id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => json_encode(['four'])
+        ]);
+
+        UserTest::create([
+            'user_id' => $tester->id,
+            'quiz_id' => $quiz->id
+        ]);
+
+        UserTest::create([
+            'user_id' => $owner->id,
+            'quiz_id' => $quiz->id,
+            'start_date' => Carbon::now(),
+            'end_date' => Carbon::now()->addDays(2)
+        ]);
+
+        $this->assertDatabaseCount('user_tests', 2);
+
+        $this->patch("/quiz/{$quiz->getRouteKey()}", [
+            'title' => 'title changed',
+            'description' => 'description changed',
+            'duration' => 30,
+            'public' => true
+        ]);
+
+        $this->assertDatabaseCount('user_tests', 0);
+    }
+
+    /** @test */
     public function a_user_must_be_assigned_to_the_quiz_before_he_can_attempt_the_quiz()
     {
         $tester = User::factory()->create();
