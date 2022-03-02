@@ -10,6 +10,9 @@ use App\Http\Controllers\TestController;
 use App\Http\Controllers\TestResultController;
 use App\Http\Controllers\UserRoleController;
 use App\Http\Controllers\UserTestController;
+use App\Models\Quiz;
+use App\Models\Test;
+use App\Models\UserTest;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -28,7 +31,15 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    $totalQuiz = Quiz::where('user_id', auth()->id())->count();
+
+    $upcomingQuiz = UserTest::where('user_id', auth()->id())->whereNull('attempt_date')->get();
+
+    $userQuizAttempted = Test::latest()->where('user_id', auth()->id())->with(['quiz'])->take(5)->get();
+
+    $latestQuizAttempted = Test::latest()->with(['quiz', 'tester', 'testAnswers'])->whereRelation('quiz', 'user_id', auth()->id())->get();
+
+    return view('dashboard', compact('totalQuiz', 'upcomingQuiz', 'userQuizAttempted', 'latestQuizAttempted'));
 })->middleware(['auth'])->name('dashboard');
 
 require __DIR__.'/auth.php';
