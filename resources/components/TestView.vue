@@ -2,6 +2,16 @@
   <section>
     <h1 class="text-center font-bold text-2xl">{{ quiz.title }}</h1>
   </section>
+
+  <section class="flex justify-end">
+    <div class="bg-gray-200 px-4 py-4 rounded-md">
+      <span
+        class="font-bold text-2xl border-black border-4 rounded-md p-1"
+        v-text="time"
+      ></span>
+      <span class="ml-2 font-semibold">Minutes Left</span>
+    </div>
+  </section>
   <!-- Questions -->
   <section>
     <h2 class="font-bold text-2xl">Questions</h2>
@@ -59,6 +69,7 @@ export default {
     return {
       quiz: "",
       answers: {},
+      time: 4,
     };
   },
 
@@ -69,6 +80,17 @@ export default {
       this.answers[question.id] = "";
       return;
     });
+
+    const miliSecondToMinute = 1000 * 60;
+
+    let timer = setInterval(() => {
+      this.time -= 1;
+      console.log(this.time);
+      if (this.time == 0) {
+        clearInterval(timer);
+        this.submit();
+      }
+    }, miliSecondToMinute);
   },
 
   methods: {
