@@ -3,13 +3,18 @@
     <h1 class="text-center font-bold text-2xl">{{ quiz.title }}</h1>
   </section>
 
-  <section class="flex justify-end">
-    <div class="bg-gray-200 px-4 py-4 rounded-md">
-      <span
-        class="font-bold text-2xl border-black border-4 rounded-md p-1"
-        v-text="time"
-      ></span>
-      <span class="ml-2 font-semibold">Minutes Left</span>
+  <section class="flex justify-end" v-if="quiz.duration">
+    <div>
+      <span class="font-bold text-2xl" v-text="time.minute"></span>
+      <span class="ml-2 font-semibold">Min</span>
+      <span class="ml-2 font-bold text-2xl" v-text="time.second"></span>
+      <span class="ml-2 font-semibold">Sec</span>
+    </div>
+  </section>
+
+  <section class="flex justify-end" v-else>
+    <div>
+      <span class="font-bold">No Time Limit</span>
     </div>
   </section>
   <!-- Questions -->
@@ -69,7 +74,10 @@ export default {
     return {
       quiz: "",
       answers: {},
-      time: 4,
+      time: {
+        minute: 0,
+        second: 0,
+      },
     };
   },
 
@@ -81,16 +89,24 @@ export default {
       return;
     });
 
-    const miliSecondToMinute = 1000 * 60;
+    if (this.quiz.duration != null) {
+      this.time.minute = this.quiz.duration;
 
-    let timer = setInterval(() => {
-      this.time -= 1;
-      console.log(this.time);
-      if (this.time == 0) {
-        clearInterval(timer);
-        this.submit();
-      }
-    }, miliSecondToMinute);
+      let timer = setInterval(() => {
+        if (this.time.second == 0 && this.time.minute > 0) {
+          this.time.minute -= 1;
+          this.time.second = 59;
+        } else {
+          this.time.second -= 1;
+        }
+
+        if (this.time.minute == 0 && this.time.second == 0) {
+          clearInterval(timer);
+
+          this.submit();
+        }
+      }, 1000);
+    }
   },
 
   methods: {
