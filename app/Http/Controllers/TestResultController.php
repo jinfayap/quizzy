@@ -29,4 +29,19 @@ class TestResultController extends Controller
 
         return view('result.show', compact('test'));
     }
+
+    public function public(Test $test)
+    {
+        if (! $test->quiz->public) {
+            abort(403);
+        }
+
+        if ((!is_null($test->user_id) && $test->user_id != auth()->id()) ) {
+            abort(403);
+        }
+
+        $test->load(['quiz','testAnswers.question']);
+
+        return view('result.show', compact('test'));
+    }
 }

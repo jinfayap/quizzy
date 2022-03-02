@@ -10,10 +10,16 @@ use Carbon\Carbon;
 
 class TestController extends Controller
 {
+    public function public(Quiz $quiz)
+    {
+        $quiz->load('questions:id,quiz_id,question_text,options,question_type');
+
+        return view('test.show', compact('quiz'));
+    }
+
     public function show(Quiz $quiz)
     {
-        if (! $quiz->public) {
-            $test = UserTest::where('quiz_id', $quiz->id)
+        $test = UserTest::where('quiz_id', $quiz->id)
             ->where(function ($query) {
                 $query->where('start_date', '<=', Carbon::now())
                     ->where('end_date', '>=', Carbon::now())
@@ -28,31 +34,10 @@ class TestController extends Controller
             })
             ->get();
 
-            $testCount = $test->count();
+        $testCount = $test->count();
 
-            if ($testCount == 0) {
-                abort(403);
-            }
-            $test = UserTest::where('quiz_id', $quiz->id)
-        ->where(function ($query) {
-            $query->where('start_date', '<=', Carbon::now())
-                ->where('end_date', '>=', Carbon::now())
-                ->where('attempt_date', null)
-                ->where('user_id', auth()->id());
-        })
-        ->orWhere(function ($query) {
-            $query->where('start_date', '=', null)
-                ->where('end_date', '=', null)
-                ->where('attempt_date', null)
-                ->where('user_id', auth()->id());
-        })
-        ->get();
-
-            $testCount = $test->count();
-
-            if ($testCount == 0) {
-                abort(403);
-            }
+        if ($testCount == 0) {
+            abort(403);
         }
 
         $quiz->load('questions:id,quiz_id,question_text,options,question_type');

@@ -85,9 +85,11 @@ Route::get('/api/user-role-permission', [UserRoleController::class, 'index'])->m
 
 Route::get('/test/quiz/{quiz}', [TestController::class, 'show'])->name('test.show');
 Route::post('/test/quiz/{quiz}', [TestController::class, 'store'])->name('test.store');
+Route::get('/public/test/quiz/{quiz}', [TestController::class, 'public'])->name('test.public');
 
 Route::get('/result/test', [TestResultController::class, 'index'])->middleware(['auth'])->name('result.index');
 Route::get('/result/test/{test}', [TestResultController::class, 'show'])->name('result.show');
+Route::get('/public/result/test/{test}', [TestResultController::class, 'public'])->name('result.public');
 
 Route::patch('/test-answer/{testAnswer}', [TestAnswerController::class, 'update'])->name('answer.update');
 Route::delete('/test-answer/{testAnswer}', [TestAnswerController::class, 'destroy'])->name('answer.destroy');

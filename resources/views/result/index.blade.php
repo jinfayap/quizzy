@@ -48,15 +48,16 @@
                                         <td class="px-6 py-4 whitespace-nowrap">
 
                                             <div>
-                                                <div class="text-sm font-medium text-gray-900">{{ $test->tester->name }}
+                                                <div class="text-sm font-medium text-gray-900">
+                                                    {{ $test->tester->name ?? 'Anonymous' }}
                                                 </div>
-                                                <div class="text-sm text-gray-500">{{ $test->tester->email }}</div>
+                                                <div class="text-sm text-gray-500">{{ $test->tester->email ?? '' }}</div>
                                             </div>
 
                                         </td>
                                     @endcan
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <a href="{{ route('result.show', $test) }}"
+                                        <a href="{{ $test->getResultUrl() }}"
                                             class="text-indigo-600 hover:text-indigo-900">View</a>
                                     </td>
                                 </tr>

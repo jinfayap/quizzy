@@ -20,4 +20,13 @@ class Quiz extends Model
     {
         return $this->hasMany(Question::class);
     }
+
+    public function getTestUrl()
+    {
+        if ($this->public) {
+            return route('test.public', $this);
+        }
+
+        return route('test.show', $this);
+    }
 }

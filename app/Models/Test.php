@@ -41,4 +41,13 @@ class Test extends Model
 
         return $this->testAnswers()->where('correct', true)->count();
     }
+
+    public function getResultUrl()
+    {
+        if ($this->quiz->public) {
+            return route('result.public', $this);
+        }
+
+        return route('result.show', $this);
+    }
 }
