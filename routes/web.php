@@ -8,6 +8,7 @@ use App\Http\Controllers\RolePermissionController;
 use App\Http\Controllers\TestAnswerController;
 use App\Http\Controllers\TestController;
 use App\Http\Controllers\TestResultController;
+use App\Http\Controllers\TriviaApiController;
 use App\Http\Controllers\UserRoleController;
 use App\Http\Controllers\UserTestController;
 use App\Models\Quiz;
@@ -108,3 +109,5 @@ Route::delete('/test-answer/{testAnswer}', [TestAnswerController::class, 'destro
 
 Route::get('/user-test', [UserTestController::class, 'index'])->name('test.index');
 Route::post('/invite/quiz/{quiz}', [UserTestController::class, 'store']);
+
+Route::post('/generate/question/{quiz}', [TriviaApiController::class, 'store']);
