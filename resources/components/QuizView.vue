@@ -79,81 +79,6 @@
 import question from "./Question.vue";
 import QuestionEditor from "./editor/QuestionEditor.vue";
 
-class Errors {
-  constructor() {
-    this.errors = {};
-  }
-
-  any() {
-    return Object.keys(this.errors).length > 0;
-  }
-
-  get(field) {
-    if (this.errors[field]) {
-      return this.errors[field][0];
-    }
-  }
-
-  record(errors) {
-    this.errors = errors;
-  }
-
-  has(field) {
-    return this.errors.hasOwnProperty(field);
-  }
-
-  clear(field) {
-    if (field) {
-      delete this.errors[field];
-    }
-  }
-}
-
-class Form {
-  constructor(data) {
-    this.originalData = data;
-
-    for (let field in data) {
-      this[field] = data[field];
-    }
-
-    this.errors = new Errors();
-  }
-
-  data() {
-    let data = {};
-
-    for (let field in this.originalData) {
-      data[field] = this[field];
-    }
-
-    return data;
-  }
-
-  updateData(data) {
-    for (let field in this.originalData) {
-      this[field] = data[field];
-    }
-  }
-
-  post(url) {
-    return this.submit("post", url);
-  }
-
-  submit(requestType, url) {
-    return new Promise((resolve, reject) => {
-      axios[requestType](url, this.data())
-        .then(({ data }) => {
-          resolve(data);
-        })
-        .catch((error) => {
-          this.errors.record(error.response.data.errors);
-          reject(this.errors);
-        });
-    });
-  }
-}
-
 export default {
   props: {
     data: Object,
@@ -178,7 +103,7 @@ export default {
   mounted() {
     this.quiz = JSON.parse(JSON.stringify(this.data));
   },
- 
+
   methods: {
     updateFormQuestion(data) {
       this.question.updateData(data);

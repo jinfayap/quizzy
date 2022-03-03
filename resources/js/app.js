@@ -17,6 +17,10 @@ window.flash = function (message, type) {
   window.events.emit("flash", message, type);
 };
 
+import Form from "./core/Form.js";
+
+window.Form = Form;
+
 import { createApp } from "vue";
 
 const app = createApp({});
