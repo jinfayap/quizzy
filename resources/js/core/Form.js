@@ -2,7 +2,7 @@ import Errors from "./Errors.js";
 
 class Form {
   constructor(data) {
-    this.originalData = data;
+    this.originalData = JSON.parse(JSON.stringify(data));
 
     for (let field in data) {
       this[field] = data[field];

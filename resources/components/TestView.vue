@@ -73,7 +73,7 @@ export default {
   data() {
     return {
       quiz: "",
-      answers: {},
+      answers: new Form({ answers: {} }),
       time: {
         minute: 0,
         second: 0,
@@ -85,7 +85,7 @@ export default {
     this.quiz = JSON.parse(JSON.stringify(this.data));
 
     this.quiz.questions.map((question) => {
-      this.answers[question.id] = "";
+      this.answers.answers[question.id] = "";
       return;
     });
 
@@ -111,26 +111,45 @@ export default {
 
   methods: {
     storeAnswer(id, answer) {
-      this.answers[id] = answer;
+      this.answers.answers[id] = answer;
+      console.log(this.answers);
     },
 
     submit() {
-      axios
-        .post(`/test/quiz/${this.quiz.id}`, { answers: this.answers })
-        .then((response) => {
+      this.answers
+        .post(`/test/quiz/${this.quiz.id}`)
+        .then((data) => {
           this.$refs.submitTest.isOpen = false;
 
-          const testId = response.data.test.id;
+          const testId = data.test.id;
 
           if (this.quiz.public) {
             location.href = "/public/result/test/" + testId;
             return;
           }
+
           location.href = "/result/test/" + testId;
         })
         .catch((error) => {
           console.log(error);
         });
+
+      // axios
+      //   .post(`/test/quiz/${this.quiz.id}`, { answers: this.answers })
+      //   .then((response) => {
+      //     this.$refs.submitTest.isOpen = false;
+
+      //     const testId = response.data.test.id;
+
+      //     if (this.quiz.public) {
+      //       location.href = "/public/result/test/" + testId;
+      //       return;
+      //     }
+      //     location.href = "/result/test/" + testId;
+      //   })
+      //   .catch((error) => {
+      //     console.log(error);
+      //   });
     },
   },
 };

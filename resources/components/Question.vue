@@ -237,7 +237,7 @@ export default {
 
   data() {
     return {
-      question: new Form(JSON.parse(JSON.stringify(this.data))),
+      question: new Form(this.data),
     };
   },
 
@@ -279,25 +279,6 @@ export default {
             "danger"
           );
         });
-
-      // axios
-      //   .patch(
-      //     `/quiz/${this.question.quiz_id}/question/${this.question.id}`,
-      //     this.question
-      //   )
-      //   .then(() => {
-      //     this.$refs.editQuestion.isOpen = false;
-      //     this.$emit("updateQuestion", this.index, this.question);
-      //     flash("Success updating the question", "success");
-      //   })
-      //   .catch((error) => {
-      //     this.question = old;
-      //     this.errors = error.response.data.errors;
-      //     flash(
-      //       "Error in updating the question, Please try again after corrections",
-      //       "danger"
-      //     );
-      //   });
     },
   },
 

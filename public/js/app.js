@@ -22807,7 +22807,7 @@ __webpack_require__.r(__webpack_exports__);
   emits: ["deleteQuestion", "updateQuestion"],
   data: function data() {
     return {
-      question: new Form(JSON.parse(JSON.stringify(this.data)))
+      question: new Form(this.data)
     };
   },
   methods: {
@@ -22844,24 +22844,7 @@ __webpack_require__.r(__webpack_exports__);
         _this2.question.reset();
 
         flash("Error in updating the question, Please try again after corrections", "danger");
-      }); // axios
-      //   .patch(
-      //     `/quiz/${this.question.quiz_id}/question/${this.question.id}`,
-      //     this.question
-      //   )
-      //   .then(() => {
-      //     this.$refs.editQuestion.isOpen = false;
-      //     this.$emit("updateQuestion", this.index, this.question);
-      //     flash("Success updating the question", "success");
-      //   })
-      //   .catch((error) => {
-      //     this.question = old;
-      //     this.errors = error.response.data.errors;
-      //     flash(
-      //       "Error in updating the question, Please try again after corrections",
-      //       "danger"
-      //     );
-      //   });
+      });
     }
   },
   computed: {
@@ -22893,7 +22876,7 @@ __webpack_require__.r(__webpack_exports__);
   },
   data: function data() {
     return {
-      quiz: new Form(JSON.parse(JSON.stringify(this.data))),
+      quiz: new Form(this.data),
       inviteForm: new Form({
         email: "",
         start_date: "",
@@ -23023,7 +23006,9 @@ __webpack_require__.r(__webpack_exports__);
   data: function data() {
     return {
       quiz: "",
-      answers: {},
+      answers: new Form({
+        answers: {}
+      }),
       time: {
         minute: 0,
         second: 0
@@ -23035,7 +23020,7 @@ __webpack_require__.r(__webpack_exports__);
 
     this.quiz = JSON.parse(JSON.stringify(this.data));
     this.quiz.questions.map(function (question) {
-      _this.answers[question.id] = "";
+      _this.answers.answers[question.id] = "";
       return;
     });
 
@@ -23059,16 +23044,15 @@ __webpack_require__.r(__webpack_exports__);
   },
   methods: {
     storeAnswer: function storeAnswer(id, answer) {
-      this.answers[id] = answer;
+      this.answers.answers[id] = answer;
+      console.log(this.answers);
     },
     submit: function submit() {
       var _this2 = this;
 
-      axios.post("/test/quiz/".concat(this.quiz.id), {
-        answers: this.answers
-      }).then(function (response) {
+      this.answers.post("/test/quiz/".concat(this.quiz.id)).then(function (data) {
         _this2.$refs.submitTest.isOpen = false;
-        var testId = response.data.test.id;
+        var testId = data.test.id;
 
         if (_this2.quiz["public"]) {
           location.href = "/public/result/test/" + testId;
@@ -23078,7 +23062,20 @@ __webpack_require__.r(__webpack_exports__);
         location.href = "/result/test/" + testId;
       })["catch"](function (error) {
         console.log(error);
-      });
+      }); // axios
+      //   .post(`/test/quiz/${this.quiz.id}`, { answers: this.answers })
+      //   .then((response) => {
+      //     this.$refs.submitTest.isOpen = false;
+      //     const testId = response.data.test.id;
+      //     if (this.quiz.public) {
+      //       location.href = "/public/result/test/" + testId;
+      //       return;
+      //     }
+      //     location.href = "/result/test/" + testId;
+      //   })
+      //   .catch((error) => {
+      //     console.log(error);
+      //   });
     }
   }
 });
@@ -24430,6 +24427,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   /* NEED_PATCH */
   )]), ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)($data.quiz.questions, function (question, index) {
     return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createBlock)(_component_question, {
+      key: question.id,
       data: question,
       index: index,
       onDeleteQuestion: $options.deleteQuestion,
@@ -24437,8 +24435,8 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     }, null, 8
     /* PROPS */
     , ["data", "index", "onDeleteQuestion", "onUpdateQuestion"]);
-  }), 256
-  /* UNKEYED_FRAGMENT */
+  }), 128
+  /* KEYED_FRAGMENT */
   ))])], 2112
   /* STABLE_FRAGMENT, DEV_ROOT_FRAGMENT */
   );
@@ -26386,7 +26384,7 @@ var Form = /*#__PURE__*/function () {
   function Form(data) {
     _classCallCheck(this, Form);
 
-    this.originalData = data;
+    this.originalData = JSON.parse(JSON.stringify(data));
 
     for (var field in data) {
       this[field] = data[field];

@@ -226,7 +226,7 @@ export default {
 
   data() {
     return {
-      quiz: new Form(JSON.parse(JSON.stringify(this.data))),
+      quiz: new Form(this.data),
       inviteForm: new Form({
         email: "",
         start_date: "",

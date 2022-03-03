@@ -68,6 +68,7 @@
 
     <question
       v-for="(question, index) in quiz.questions"
+      :key="question.id"
       :data="question"
       :index="index"
       @deleteQuestion="deleteQuestion"
