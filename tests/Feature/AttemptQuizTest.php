@@ -166,6 +166,47 @@ class AttemptQuizTest extends TestCase
     }
 
     /** @test */
+    public function if_the_quiz_is_public_guest_cannot_use_the_authenticated_result()
+    {
+        $quiz = Quiz::factory()->create([
+            'public' => true
+        ]);
+
+        $questionOne = Question::factory()->radio()->create([
+            'quiz_id' => $quiz->id,
+            'user_id' => $quiz->user_id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => json_encode(['one'])
+        ]);
+
+        $questionTwo = Question::factory()->radio()->create([
+            'quiz_id' => $quiz->id,
+            'user_id' => $quiz->user_id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => json_encode(['four'])
+        ]);
+
+        $test = Test::create([
+            'user_id' => null,
+            'quiz_id' => $quiz->id,
+            'result' => 0
+        ]);
+
+        $this->get('/public/result/test/1')->assertStatus(200);
+        $this->get('/result/test/1')->assertStatus(403);
+    }
+
+    /** @test */
     public function if_the_quiz_is_public_any_user_can_access_and_submit()
     {
         $quiz = Quiz::factory()->create([

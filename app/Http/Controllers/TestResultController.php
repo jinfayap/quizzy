@@ -21,6 +21,10 @@ class TestResultController extends Controller
 
     public function show(Test $test)
     {
+        if (auth()->guest()) {
+            abort(403);
+        }
+
         if ($test->user_id != auth()->id() && !Gate::forUser(auth()->user())->allows('view test result')) {
             abort(403);
         }
@@ -36,7 +40,7 @@ class TestResultController extends Controller
             abort(403);
         }
 
-        if ((!is_null($test->user_id) && $test->user_id != auth()->id()) ) {
+        if ((!is_null($test->user_id) && $test->user_id != auth()->id())) {
             abort(403);
         }
 

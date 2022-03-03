@@ -122,6 +122,10 @@ export default {
 
           const testId = response.data.test.id;
 
+          if (this.quiz.public) {
+            location.href = "/public/result/test/" + testId;
+            return;
+          }
           location.href = "/result/test/" + testId;
         })
         .catch((error) => {

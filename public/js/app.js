@@ -23069,6 +23069,12 @@ __webpack_require__.r(__webpack_exports__);
       }).then(function (response) {
         _this2.$refs.submitTest.isOpen = false;
         var testId = response.data.test.id;
+
+        if (_this2.quiz["public"]) {
+          location.href = "/public/result/test/" + testId;
+          return;
+        }
+
         location.href = "/result/test/" + testId;
       })["catch"](function (error) {
         console.log(error);
