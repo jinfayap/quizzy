@@ -16,7 +16,7 @@ class CreateTestAnswersTable extends Migration
         Schema::create('test_answers', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
-            $table->foreignId('test_id')->nullable()->constrained();
+            $table->foreignId('test_id')->nullable()->constrained()->onDelete('cascade');
             $table->foreignId('question_id')->constrained()->onDelete('cascade');
             $table->text('user_answer')->nullable();
             $table->boolean('correct')->default(false);

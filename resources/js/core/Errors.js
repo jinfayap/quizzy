@@ -26,6 +26,10 @@ class Errors {
       delete this.errors[field];
     }
   }
+
+  reset() {
+    this.errors = {};
+  }
 }
 
 export default Errors;

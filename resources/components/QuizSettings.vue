@@ -1,30 +1,6 @@
 <template>
   <div class="grid grid-cols-12">
     <div class="col-span-8">
-      <!-- <section class="mr-2">
-        <h2 class="font-bold text-center text-2xl">Quiz Information</h2>
-
-        <div class="mt-2">
-          <span class="text-gray-500 text-sm mr-2">Title :</span>
-          <span>{{ quiz.title }}</span>
-        </div>
-
-        <div class="mt-2">
-          <span class="text-gray-500 text-sm mr-2">Description :</span>
-          <span>{{ quiz.description }}</span>
-        </div>
-
-        <div class="mt-2">
-          <span class="text-gray-500 text-sm mr-2">Duration :</span>
-          <span>{{ quiz.duration }}</span>
-        </div>
-
-        <div class="mt-2">
-          <span class="text-gray-500 text-sm mr-2">Public :</span>
-          <span>{{ quiz.public ? "Yes" : "No" }}</span>
-        </div>
-      </section> -->
-
       <!-- Quiz Information -->
       <section class="p-5 rounded-md">
         <h2 class="font-bold text-center text-2xl">Basic Quiz Information</h2>
@@ -39,7 +15,14 @@
             class="w-full rounded-md"
             required
             v-model="quiz.title"
+            @keydown="quiz.errors.clear('title')"
           />
+          <span
+            class="text-xs text-red-500 block"
+            v-if="quiz.errors.has('title')"
+            v-text="quiz.errors.get('title')"
+          >
+          </span>
         </div>
         <div class="mt-2">
           <label
@@ -67,7 +50,14 @@
             class="w-full rounded-md placeholder:text-sm"
             placeholder="optional"
             v-model="quiz.duration"
+            @keydown="quiz.errors.clear('duration')"
           />
+          <span
+            class="text-xs text-red-500 block"
+            v-if="quiz.errors.has('duration')"
+            v-text="quiz.errors.get('duration')"
+          >
+          </span>
         </div>
 
         <div class="mt-2">
@@ -86,12 +76,6 @@
             <input type="radio" :value="1" v-model="quiz.public" />
             <label for="one" class="ml-2">Yes</label>
           </div>
-        </div>
-
-        <div v-if="quizError" class="mt-2 bg-red-100 text-left px-4 py-2">
-          <span class="text-xs text-red-500 block" v-for="error in quizError">
-            {{ error[0] }}
-          </span>
         </div>
 
         <div class="mt-4 flex justify-end">
@@ -197,7 +181,14 @@
               type="text"
               class="rounded w-full"
               v-model="inviteForm.email"
+              @keydown="inviteForm.errors.clear('email')"
             />
+            <span
+              class="text-xs text-red-500 block"
+              v-if="inviteForm.errors.has('email')"
+              v-text="inviteForm.errors.get('email')"
+            >
+            </span>
           </div>
           <div>
             <label class="text-sm">Start date</label>
@@ -222,12 +213,6 @@
           >
             Give access
           </button>
-
-          <div v-if="errors" class="mt-2 bg-red-100 text-left px-4 py-2">
-            <span class="text-xs text-red-500 block" v-for="error in errors">
-              {{ error[0] }}
-            </span>
-          </div>
         </form>
       </section>
     </div>
@@ -241,50 +226,51 @@ export default {
 
   data() {
     return {
-      quiz: JSON.parse(JSON.stringify(this.data)),
-      inviteForm: {
+      quiz: new Form(JSON.parse(JSON.stringify(this.data))),
+      inviteForm: new Form({
         email: "",
         start_date: "",
         end_date: "",
-      },
-      errors: null,
-      quizError: null,
+      }),
       isPublic: this.data.public,
     };
   },
 
   methods: {
     deleteQuiz() {
-      axios
+      this.quiz
         .delete(`/quiz/${this.quiz.id}`)
         .then((response) => {
           location.href = "/quiz";
+          flash("Quiz deleted", "success");
         })
         .catch((error) => {
-          console.log("Error in deleting the quiz");
+          flash("Error in deleting the quiz", "danger");
         });
     },
 
     invite() {
-      axios
-        .post(`/invite/quiz/${this.quiz.id}`, this.inviteForm)
+      this.inviteForm
+        .post(`/invite/quiz/${this.quiz.id}`)
         .then((response) => {
-          console.log("success");
+          flash("Success in sending test invite", "success");
         })
         .catch((error) => {
-          this.errors = error.response.data.errors;
+          flash(
+            "Failed to send test invite to the user with this email",
+            "danger"
+          );
         });
     },
 
     save() {
-      axios
-        .patch(`/quiz/${this.quiz.id}`, this.quiz)
+      this.quiz
+        .patch(`/quiz/${this.quiz.id}`)
         .then((response) => {
           flash("Quiz information updated");
           this.isPublic = this.quiz.public;
         })
         .catch((error) => {
-          this.quizError = error.response.data.errors;
           flash("Error in updating the quiz information", "danger");
         });
     },

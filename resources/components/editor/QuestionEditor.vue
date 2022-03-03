@@ -129,7 +129,10 @@
           <button
             class="p-2 rounded-md"
             :class="answerColor(option['option'])"
-            @click="selectAnswer(option['option'])"
+            @click="
+              selectAnswer(option['option']);
+              errors.clear('answer');
+            "
           >
             <svg
               class="h-4 w-4"
@@ -185,6 +188,11 @@
           </button>
         </div>
       </div>
+      <span
+        class="text-xs text-red-500 block"
+        v-if="errors.has('answer')"
+        v-text="errors.get('answer')"
+      ></span>
     </div>
   </div>
 

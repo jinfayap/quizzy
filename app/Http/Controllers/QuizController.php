@@ -76,7 +76,7 @@ class QuizController extends Controller
         $attributes = request()->validate([
             'title' => ['required'],
             'description' => ['nullable'],
-            'duration' => ['nullable'],
+            'duration' => ['nullable', 'integer'],
             'public' => ['required', 'boolean']
         ]);
 

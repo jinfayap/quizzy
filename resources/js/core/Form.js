@@ -27,14 +27,30 @@ class Form {
     }
   }
 
+  updateOriginalData() {
+    for (let field in this.originalData) {
+      this.originalData[field] = this[field];
+    }
+  }
+
   post(url) {
     return this.submit("post", url);
+  }
+
+  patch(url) {
+    return this.submit("patch", url);
+  }
+
+  delete(url) {
+    return this.submit("delete", url);
   }
 
   submit(requestType, url) {
     return new Promise((resolve, reject) => {
       axios[requestType](url, this.data())
         .then(({ data }) => {
+          requestType != "patch" ? this.reset() : "";
+          this.errors.reset();
           resolve(data);
         })
         .catch((error) => {
@@ -42,6 +58,12 @@ class Form {
           reject(this.errors);
         });
     });
+  }
+
+  reset() {
+    for (let field in this.originalData) {
+      this[field] = this.originalData[field];
+    }
   }
 }
 

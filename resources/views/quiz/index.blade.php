@@ -67,7 +67,7 @@
                     </span>
 
 
-                    <span class="font-thin text-xs">1 day ago</span>
+                    <span class="font-thin text-xs">{{ $quiz->created_at->diffForHumans() }}</span>
                 </div>
             </div>
         @endforeach

@@ -44,7 +44,7 @@ Route::get('/dashboard', function () {
 
 require __DIR__.'/auth.php';
 
-Route::get('/quiz', [QuizController::class, 'index'])->middleware('auth')->name('quiz.index');
+Route::get('/quiz', [QuizController::class, 'index'])->middleware(['auth', 'permission:view quiz'])->name('quiz.index');
 Route::get('/quiz/create', [QuizController::class, 'create'])->middleware('auth')->name('quiz.create');
 Route::get('/quiz/{quiz}', [QuizController::class, 'show'])->middleware('auth')->name('quiz.show');
 Route::get('/quiz/{quiz}/edit', [QuizController::class, 'edit'])->middleware('auth')->name('quiz.edit');

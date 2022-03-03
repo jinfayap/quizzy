@@ -55,8 +55,7 @@
                 <question-editor
                   ref="editEditor"
                   :data="question"
-                  :data-error="errors"
-                  @updateQuestion="updateQuestion"
+                  :errors="question.errors"
                   mode="edit"
                 ></question-editor>
               </template>
@@ -71,27 +70,6 @@
                 </button>
               </template>
             </modal>
-            <!-- <modal>
-              <template v-slot:trigger>
-                <button
-                  class="p-2 rounded-md bg-green-400 hover:bg-green-500 text-white flex items-center"
-                >
-                  <svg
-                    class="h-4 w-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                    /></svg
-                  ><span class="ml-1 hidden lg:block text-xs">Edit</span>
-                </button>
-              </template>
-            </modal> -->
 
             <modal ref="deleteQuestion">
               <template v-slot:trigger>
@@ -259,8 +237,7 @@ export default {
 
   data() {
     return {
-      question: this.data,
-      errors: null,
+      question: new Form(JSON.parse(JSON.stringify(this.data))),
     };
   },
 
@@ -282,33 +259,45 @@ export default {
         });
     },
 
-    updateQuestion(data) {
-      this.question = data;
-    },
-
     submit() {
-      const old = this.question;
+      // this.question = this.$refs.editEditor.question;
 
-      this.question = this.$refs.editEditor.question;
+      this.question.updateData(this.$refs.editEditor.question);
 
-      axios
-        .patch(
-          `/quiz/${this.question.quiz_id}/question/${this.question.id}`,
-          this.question
-        )
-        .then(() => {
+      this.question
+        .patch(`/quiz/${this.question.quiz_id}/question/${this.question.id}`)
+        .then((response) => {
           this.$refs.editQuestion.isOpen = false;
-          this.$emit("updateQuestion", this.index, this.question);
+          this.$emit("updateQuestion", this.index, this.question.data());
+          this.question.updateOriginalData();
           flash("Success updating the question", "success");
         })
         .catch((error) => {
-          this.question = old;
-          this.errors = error.response.data.errors;
+          this.question.reset();
           flash(
             "Error in updating the question, Please try again after corrections",
             "danger"
           );
         });
+
+      // axios
+      //   .patch(
+      //     `/quiz/${this.question.quiz_id}/question/${this.question.id}`,
+      //     this.question
+      //   )
+      //   .then(() => {
+      //     this.$refs.editQuestion.isOpen = false;
+      //     this.$emit("updateQuestion", this.index, this.question);
+      //     flash("Success updating the question", "success");
+      //   })
+      //   .catch((error) => {
+      //     this.question = old;
+      //     this.errors = error.response.data.errors;
+      //     flash(
+      //       "Error in updating the question, Please try again after corrections",
+      //       "danger"
+      //     );
+      //   });
     },
   },
 
