@@ -23,7 +23,7 @@ class QuestionController extends Controller
                 'answer' => ['required'],
                 'question_type' => ['required', Rule::in(['text', 'textarea', 'select', 'radio', 'checkbox'])],
                 'answer_explanation' => ['nullable'],
-                'more_info_link' => ['nullable']
+                'more_info_link' => ['nullable', 'url']
             ]);
         } elseif (in_array(request('question_type'), ['select', 'radio', 'checkbox'])) {
             $attributes = request()->validate([
@@ -43,7 +43,7 @@ class QuestionController extends Controller
                 },],
                 'question_type' => ['required', Rule::in(['text', 'textarea', 'select', 'radio', 'checkbox'])],
                 'answer_explanation' => ['nullable'],
-                'more_info_link' => ['nullable']
+                'more_info_link' => ['nullable', 'url']
             ]);
 
             $attributes['answer'] = json_encode($attributes['answer']);

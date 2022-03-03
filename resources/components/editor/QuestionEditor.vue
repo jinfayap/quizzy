@@ -12,7 +12,14 @@
         name="question_text"
         v-model="question.question_text"
         class="w-full rounded min-h-[80px]"
+        @keydown="errors.clear('question_text')"
       ></textarea>
+      <span
+        class="text-xs text-red-500 block"
+        v-if="errors.has('question_text')"
+        v-text="errors.get('question_text')"
+      >
+      </span>
     </div>
     <div class="col-span-3">
       <label
@@ -46,7 +53,14 @@
         name="answer"
         class="w-full rounded"
         v-model="question.answer"
+        @keydown="errors.clear('answer')"
       />
+      <span
+        class="text-xs text-red-500 block"
+        v-if="errors.has('answer')"
+        v-text="errors.get('answer')"
+      >
+      </span>
     </div>
     <!-- TextArea -->
     <div v-else-if="question.question_type == 'textarea'">
@@ -60,7 +74,14 @@
         name="answer"
         v-model="question.answer"
         class="w-full rounded min-h-[80px]"
+        @keydown="errors.clear('answer')"
       ></textarea>
+      <span
+        class="text-xs text-red-500 block"
+        v-if="errors.has('answer')"
+        v-text="errors.get('answer')"
+      >
+      </span>
     </div>
     <!-- Radio, Select, Checkbox -->
     <div v-else>
@@ -196,12 +217,13 @@
       class="w-full rounded"
       placeholder="optional"
       v-model="question.more_info_link"
+      @keydown="errors.clear('more_info_link')"
     />
-  </div>
-
-  <div v-if="dataError" class="mt-2 bg-red-100 text-left px-4 py-2">
-    <span class="text-xs text-red-500 block" v-for="error in dataError">
-      {{ error[0] }}
+    <span
+      class="text-xs text-red-500 block"
+      v-if="errors.has('more_info_link')"
+      v-text="errors.get('more_info_link')"
+    >
     </span>
   </div>
 </template>
@@ -209,7 +231,7 @@
 export default {
   props: {
     data: Object,
-    dataError: Object,
+    errors: Object,
     mode: String,
   },
 
