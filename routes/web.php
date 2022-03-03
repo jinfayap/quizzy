@@ -27,8 +27,9 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
-});
+    $publicTests = Quiz::latest()->where('public', true)->take(10)->get();
+    return view('welcome', compact('publicTests'));
+})->middleware('guest');
 
 Route::get('/dashboard', function () {
     $totalQuiz = Quiz::where('user_id', auth()->id())->count();
