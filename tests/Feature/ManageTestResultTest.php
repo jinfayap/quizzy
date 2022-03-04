@@ -7,9 +7,11 @@ use App\Models\Quiz;
 use App\Models\Test;
 use App\Models\TestAnswer;
 use App\Models\User;
+use Facades\Tests\Factories\QuizFactory;
 use Facades\Tests\Factories\UserFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Facades\Auth;
 use Tests\TestCase;
 
 class ManageTestResultTest extends TestCase
@@ -17,130 +19,139 @@ class ManageTestResultTest extends TestCase
     use RefreshDatabase;
 
     /** @test */
-    public function tester_can_view_their_own_result()
+    public function tester_can_view_their_result()
     {
-        $quiz = Quiz::factory()->create();
 
-        $questionOne = Question::factory()->radio()->create([
-                'quiz_id' => $quiz->id,
-                'user_id' => $quiz->user_id,
-                "options" => [
-                    ['option' => 'one'],
-                    ['option' => 'two'],
-                    ['option' => 'three'],
-                    ['option' => 'four'],
-                ],
-                "answer" => json_encode(['three'])
-            ]);
+        $quiz = QuizFactory::withQuestions(2)->create();
 
-        $questionTwo = Question::factory()->radio()->create([
-                'quiz_id' => $quiz->id,
-                'user_id' => $quiz->user_id,
-                "options" => [
-                    ['option' => 'one'],
-                    ['option' => 'two'],
-                    ['option' => 'three'],
-                    ['option' => 'four'],
-                ],
-                "answer" => json_encode(['four'])
-            ]);
+        $tester = $this->signIn();
 
-        $tester = User::factory()->create();
-
-        $this->actingAs($tester)->post("/test/quiz/{$quiz->getRouteKey()}", ['answers' => [
-                1 => 'one',
-                2 => 'four',
-            ]]);
+        $this->post("/test/quiz/{$quiz->getRouteKey()}", ['answers' => [
+            1 => 'one',
+            2 => 'four',
+        ]]);
 
         $test = Test::first();
 
-        $this->actingAs($tester)->get("/result/test/{$test->getRouteKey()}")->assertStatus(200);
+        $this->get(route('result.show', $test))->assertStatus(200);
     }
 
     /** @test */
     public function other_user_cannot_view_other_tester_result()
     {
-        $quiz = Quiz::factory()->create();
+        $quiz = QuizFactory::withQuestions(2)->create();
 
-        $questionOne = Question::factory()->radio()->create([
-                'quiz_id' => $quiz->id,
-                'user_id' => $quiz->user_id,
-                "options" => [
-                    ['option' => 'one'],
-                    ['option' => 'two'],
-                    ['option' => 'three'],
-                    ['option' => 'four'],
-                ],
-                "answer" => json_encode(['three'])
-            ]);
+        $test = Test::factory()->create([
+            'quiz_id' => $quiz->id
+        ]);
 
-        $questionTwo = Question::factory()->radio()->create([
-                'quiz_id' => $quiz->id,
-                'user_id' => $quiz->user_id,
-                "options" => [
-                    ['option' => 'one'],
-                    ['option' => 'two'],
-                    ['option' => 'three'],
-                    ['option' => 'four'],
-                ],
-                "answer" => json_encode(['four'])
-            ]);
+        $this->assertFalse($quiz->public);
 
-        $tester = User::factory()->create();
+        $anotherUser = $this->signIn();
 
-        $this->actingAs($tester)->post("/test/quiz/{$quiz->getRouteKey()}", ['answers' => [
-                1 => 'one',
-                2 => 'four',
-            ]]);
+        $this->get(route('result.show', $test))->assertStatus(403);
+        $this->get(route('result.public', $test))->assertStatus(403);
 
-        $test = Test::first();
+        $quiz->update([
+            'public' => true
+        ]);
 
-        $anotherUser = User::factory()->create();
+        $this->assertTrue($quiz->public);
 
-        $this->actingAs($anotherUser)->get("/result/test/{$test->getRouteKey()}")->assertStatus(403);
+        $this->get(route('result.show', $test))->assertStatus(403);
+        $this->get(route('result.public', $test))->assertStatus(403);
+    }
+
+    /** @test */
+    public function guest_cannot_view_other_tester_result()
+    {
+        $quiz = QuizFactory::withQuestions(2)->create();
+
+        $test = Test::factory()->create([
+            'quiz_id' => $quiz->id
+        ]);
+
+        $this->assertFalse($quiz->public);
+
+        $this->get(route('result.show', $test))->assertStatus(403);
+        $this->get(route('result.public', $test))->assertStatus(403);
+
+        $quiz->update([
+            'public' => true
+        ]);
+
+        $this->assertTrue($quiz->public);
+
+        $this->get(route('result.show', $test))->assertStatus(403);
+        $this->get(route('result.public', $test))->assertStatus(403);
+    }
+
+    /** @test */
+    public function
+    tester_cannot_view_result_from_public_url_if_quiz_is_private()
+    {
+        $quiz = QuizFactory::withQuestions(2)->create();
+
+        $tester = $this->signIn();
+
+        $test = Test::factory()->create([
+            'quiz_id' => $quiz->id,
+            'user_id' => $tester->id
+        ]);
+
+        $this->assertFalse($quiz->public);
+
+        $this->get(route('result.public', $test))->assertStatus(403);
+    }
+
+    /** @test */
+    public function guest_cannot_use_private_result_url_to_visit_result()
+    {
+        $quiz = QuizFactory::withQuestions(2)->create([
+            'public' => true
+        ]);
+
+        $this->assertTrue($quiz->public);
+
+        $test = Test::create([
+            'user_id' => null,
+            'quiz_id' => $quiz->id,
+            'result' => 0
+        ]);
+
+        $this->get(route('result.show', $test))->assertStatus(403);
+    }
+
+    /** @test */
+    public function guest_can_use_public_result_url_to_visit_result_if_quiz_is_public()
+    {
+        $quiz = QuizFactory::withQuestions(2)->create([
+            'public' => true
+        ]);
+
+        $this->assertTrue($quiz->public);
+
+        $test = Test::create([
+            'user_id' => null,
+            'quiz_id' => $quiz->id,
+            'result' => 0
+        ]);
+
+        $this->get(route('result.public', $test))->assertStatus(200);
     }
 
     /** @test */
     public function user_with_view_test_result_permission_can_view_tester_result()
     {
         $educator = UserFactory::withRole('educator')
-                ->withPermissions(['view test result'])
-                ->create();
+            ->withPermissions(['view test result'])
+            ->create();
 
-        $quiz = Quiz::factory()->create();
+        $quiz = QuizFactory::withQuestions(2)->create();
 
-        $questionOne = Question::factory()->radio()->create([
-                    'quiz_id' => $quiz->id,
-                    'user_id' => $quiz->user_id,
-                    "options" => [
-                        ['option' => 'one'],
-                        ['option' => 'two'],
-                        ['option' => 'three'],
-                        ['option' => 'four'],
-                    ],
-                    "answer" => json_encode(['three'])
-                ]);
-
-        $questionTwo = Question::factory()->radio()->create([
-                    'quiz_id' => $quiz->id,
-                    'user_id' => $quiz->user_id,
-                    "options" => [
-                        ['option' => 'one'],
-                        ['option' => 'two'],
-                        ['option' => 'three'],
-                        ['option' => 'four'],
-                    ],
-                    "answer" => json_encode(['four'])
-                ]);
-
-        $tester = User::factory()->create();
-
-        $this->actingAs($tester)->post("/test/quiz/{$quiz->getRouteKey()}", ['answers' => [
-                    1 => 'one',
-                    2 => 'four',
-                ]]);
-
-        $test = Test::first();
+        $test = Test::factory()->create([
+            'quiz_id' => $quiz->id
+        ]);
 
         $this->actingAs($educator)->get("/result/test/{$test->getRouteKey()}")->assertStatus(200);
     }
@@ -149,41 +160,41 @@ class ManageTestResultTest extends TestCase
     public function user_with_mark_question_permission_can_mark_the_question_as_correct()
     {
         $educator = UserFactory::withRole('educator')
-                ->withPermissions(['mark question'])
-                ->create();
+            ->withPermissions(['mark question'])
+            ->create();
 
         $quiz = Quiz::factory()->create();
 
         $questionOne = Question::factory()->radio()->create([
-                'quiz_id' => $quiz->id,
-                'user_id' => $quiz->user_id,
-                "options" => [
-                    ['option' => 'one'],
-                    ['option' => 'two'],
-                    ['option' => 'three'],
-                    ['option' => 'four'],
-                ],
-                "answer" => json_encode(['three'])
-            ]);
+            'quiz_id' => $quiz->id,
+            'user_id' => $quiz->user_id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => json_encode(['three'])
+        ]);
 
         $questionTwo = Question::factory()->radio()->create([
-                'quiz_id' => $quiz->id,
-                'user_id' => $quiz->user_id,
-                "options" => [
-                    ['option' => 'one'],
-                    ['option' => 'two'],
-                    ['option' => 'three'],
-                    ['option' => 'four'],
-                ],
-                "answer" => json_encode(['four'])
-            ]);
+            'quiz_id' => $quiz->id,
+            'user_id' => $quiz->user_id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => json_encode(['four'])
+        ]);
 
         $tester = User::factory()->create();
 
         $this->actingAs($tester)->post("/test/quiz/{$quiz->getRouteKey()}", ['answers' => [
-                1 => 'one',
-                2 => 'four',
-            ]]);
+            1 => 'one',
+            2 => 'four',
+        ]]);
 
         $testAnswers = TestAnswer::all();
 
@@ -199,41 +210,41 @@ class ManageTestResultTest extends TestCase
     public function user_without_mark_question_permission_cannot_mark_the_question_as_correct()
     {
         $educator = UserFactory::withRole('educator')
-                ->withPermissions(['mark question'])
-                ->create();
+            ->withPermissions(['mark question'])
+            ->create();
 
         $quiz = Quiz::factory()->create();
 
         $questionOne = Question::factory()->radio()->create([
-                'quiz_id' => $quiz->id,
-                'user_id' => $quiz->user_id,
-                "options" => [
-                    ['option' => 'one'],
-                    ['option' => 'two'],
-                    ['option' => 'three'],
-                    ['option' => 'four'],
-                ],
-                "answer" => json_encode(['three'])
-            ]);
+            'quiz_id' => $quiz->id,
+            'user_id' => $quiz->user_id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => json_encode(['three'])
+        ]);
 
         $questionTwo = Question::factory()->radio()->create([
-                'quiz_id' => $quiz->id,
-                'user_id' => $quiz->user_id,
-                "options" => [
-                    ['option' => 'one'],
-                    ['option' => 'two'],
-                    ['option' => 'three'],
-                    ['option' => 'four'],
-                ],
-                "answer" => json_encode(['four'])
-            ]);
+            'quiz_id' => $quiz->id,
+            'user_id' => $quiz->user_id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => json_encode(['four'])
+        ]);
 
         $tester = User::factory()->create();
 
         $this->actingAs($tester)->post("/test/quiz/{$quiz->getRouteKey()}", ['answers' => [
-                1 => 'one',
-                2 => 'four',
-            ]]);
+            1 => 'one',
+            2 => 'four',
+        ]]);
 
         $testAnswers = TestAnswer::all();
 
@@ -249,41 +260,41 @@ class ManageTestResultTest extends TestCase
     public function user_with_mark_question_permission_can_mark_the_question_as_incorrect()
     {
         $educator = UserFactory::withRole('educator')
-                    ->withPermissions(['mark question'])
-                    ->create();
+            ->withPermissions(['mark question'])
+            ->create();
 
         $quiz = Quiz::factory()->create();
 
         $questionOne = Question::factory()->radio()->create([
-                    'quiz_id' => $quiz->id,
-                    'user_id' => $quiz->user_id,
-                    "options" => [
-                        ['option' => 'one'],
-                        ['option' => 'two'],
-                        ['option' => 'three'],
-                        ['option' => 'four'],
-                    ],
-                    "answer" => json_encode(['three'])
-                ]);
+            'quiz_id' => $quiz->id,
+            'user_id' => $quiz->user_id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => json_encode(['three'])
+        ]);
 
         $questionTwo = Question::factory()->radio()->create([
-                    'quiz_id' => $quiz->id,
-                    'user_id' => $quiz->user_id,
-                    "options" => [
-                        ['option' => 'one'],
-                        ['option' => 'two'],
-                        ['option' => 'three'],
-                        ['option' => 'four'],
-                    ],
-                    "answer" => json_encode(['four'])
-                ]);
+            'quiz_id' => $quiz->id,
+            'user_id' => $quiz->user_id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => json_encode(['four'])
+        ]);
 
         $tester = User::factory()->create();
 
         $this->actingAs($tester)->post("/test/quiz/{$quiz->getRouteKey()}", ['answers' => [
-                    1 => 'one',
-                    2 => 'four',
-                ]]);
+            1 => 'one',
+            2 => 'four',
+        ]]);
 
         $testAnswers = TestAnswer::all();
 
@@ -299,41 +310,41 @@ class ManageTestResultTest extends TestCase
     public function user_without_mark_question_permission_cannot_mark_the_question_as_incorrect()
     {
         $educator = UserFactory::withRole('educator')
-                ->withPermissions(['mark question'])
-                ->create();
+            ->withPermissions(['mark question'])
+            ->create();
 
         $quiz = Quiz::factory()->create();
 
         $questionOne = Question::factory()->radio()->create([
-                'quiz_id' => $quiz->id,
-                'user_id' => $quiz->user_id,
-                "options" => [
-                    ['option' => 'one'],
-                    ['option' => 'two'],
-                    ['option' => 'three'],
-                    ['option' => 'four'],
-                ],
-                "answer" => json_encode(['three'])
-            ]);
+            'quiz_id' => $quiz->id,
+            'user_id' => $quiz->user_id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => json_encode(['three'])
+        ]);
 
         $questionTwo = Question::factory()->radio()->create([
-                'quiz_id' => $quiz->id,
-                'user_id' => $quiz->user_id,
-                "options" => [
-                    ['option' => 'one'],
-                    ['option' => 'two'],
-                    ['option' => 'three'],
-                    ['option' => 'four'],
-                ],
-                "answer" => json_encode(['four'])
-            ]);
+            'quiz_id' => $quiz->id,
+            'user_id' => $quiz->user_id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => json_encode(['four'])
+        ]);
 
         $tester = User::factory()->create();
 
         $this->actingAs($tester)->post("/test/quiz/{$quiz->getRouteKey()}", ['answers' => [
-                1 => 'one',
-                2 => 'four',
-            ]]);
+            1 => 'one',
+            2 => 'four',
+        ]]);
 
         $testAnswers = TestAnswer::all();
 

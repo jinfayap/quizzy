@@ -20,7 +20,7 @@ class ManageQuizTest extends TestCase
         $question = Question::factory()->raw([
             'user_id' => $quiz->user_id,
             'quiz_id' => $quiz->id
-            ]);
+        ]);
 
         $this->post("/quiz/{$quiz->getRouteKey()}/question", $question)->assertRedirect(route('login'));
 
@@ -37,7 +37,7 @@ class ManageQuizTest extends TestCase
         $question = Question::factory()->raw([
             'user_id' => $quiz->user_id,
             'quiz_id' => $quiz->id
-            ]);
+        ]);
 
         $nonOwner = $this->signIn();
 
@@ -58,7 +58,7 @@ class ManageQuizTest extends TestCase
         $question = Question::factory()->raw([
             'user_id' => $user->id,
             'quiz_id' => $quiz->id
-            ]);
+        ]);
 
         $this->post("/quiz/{$quiz->getRouteKey()}/question", $question);
 
@@ -165,7 +165,8 @@ class ManageQuizTest extends TestCase
 
         $this->assertDatabaseCount('questions', 1);
 
-        $this->delete("/quiz/{$quiz->getRouteKey()}/question/{$question->getRouteKey()}")->assertRedirect(route('login'));
+        $this->delete("/quiz/{$quiz->getRouteKey()}/question/{$question->getRouteKey()}")
+            ->assertRedirect(route('login'));
 
         $this->assertDatabaseCount('questions', 1);
     }

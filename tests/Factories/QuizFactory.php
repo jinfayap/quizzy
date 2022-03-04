@@ -28,10 +28,12 @@ class QuizFactory
 
     public function create($attributes = [])
     {
-        $quiz = Quiz::factory()->create([
-            'user_id' => $this->user ?? $user = User::factory()->create(),
-            ...$attributes
-        ]);
+        $quiz = Quiz::factory()->create(array_merge(
+            [
+                'user_id' => $this->user ?? $user = User::factory()->create()
+            ],
+            $attributes
+        ));
 
         Question::factory($this->questionsCount)->create([
             'user_id' => $this->user ?? $user->id,

@@ -9,6 +9,7 @@ use App\Models\TestAnswer;
 use App\Models\User;
 use App\Models\UserTest;
 use Carbon\Carbon;
+use Facades\Tests\Factories\QuizFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -18,223 +19,11 @@ class AttemptQuizTest extends TestCase
     use RefreshDatabase;
 
     /** @test */
-    public function other_user_cannot_visit_the_public_result_page_if_there_is_a_user_associated()
-    {
-        $tester = User::factory()->create();
-
-        $quiz = Quiz::factory()->create([
-            'public' => true
-        ]);
-
-        $questionOne = Question::factory()->radio()->create([
-            'quiz_id' => $quiz->id,
-            'user_id' => $quiz->user_id,
-            "options" => [
-                ['option' => 'one'],
-                ['option' => 'two'],
-                ['option' => 'three'],
-                ['option' => 'four'],
-            ],
-            "answer" => json_encode(['one'])
-        ]);
-
-        $questionTwo = Question::factory()->radio()->create([
-            'quiz_id' => $quiz->id,
-            'user_id' => $quiz->user_id,
-            "options" => [
-                ['option' => 'one'],
-                ['option' => 'two'],
-                ['option' => 'three'],
-                ['option' => 'four'],
-            ],
-            "answer" => json_encode(['four'])
-        ]);
-
-        $this->get("/public/test/quiz/{$quiz->getRouteKey()}")->assertStatus(200);
-
-        $this->actingAs($tester)->post("/test/quiz/{$quiz->getRouteKey()}", ['answers' => [
-            1 => 'one',
-            2 => 'two',
-        ]]);
-
-        $anotherUser = User::factory()->create();
-
-        $this->actingAs($tester)->get('public/result/test/1')->assertStatus(200);
-
-        $this->actingAs($anotherUser)->get('public/result/test/1')->assertStatus(403);
-    }
-
-    /** @test */
-    public function user_cannot_use_the_public_url_to_visit_other_associated_user_result()
-    {
-        $tester = User::factory()->create();
-
-        $quiz = Quiz::factory()->create([
-            'public' => true
-        ]);
-
-        $questionOne = Question::factory()->radio()->create([
-            'quiz_id' => $quiz->id,
-            'user_id' => $quiz->user_id,
-            "options" => [
-                ['option' => 'one'],
-                ['option' => 'two'],
-                ['option' => 'three'],
-                ['option' => 'four'],
-            ],
-            "answer" => json_encode(['one'])
-        ]);
-
-        $questionTwo = Question::factory()->radio()->create([
-            'quiz_id' => $quiz->id,
-            'user_id' => $quiz->user_id,
-            "options" => [
-                ['option' => 'one'],
-                ['option' => 'two'],
-                ['option' => 'three'],
-                ['option' => 'four'],
-            ],
-            "answer" => json_encode(['four'])
-        ]);
-
-        $this->get("/public/test/quiz/{$quiz->getRouteKey()}")->assertStatus(200);
-
-        $this->actingAs($tester)->post("/test/quiz/{$quiz->getRouteKey()}", ['answers' => [
-            1 => 'one',
-            2 => 'two',
-        ]]);
-
-        $this->actingAs($tester)->get('/public/result/test/1')->assertStatus(200);
-
-        $quiz->update([
-            'public' => false
-        ]);
-
-        $anotherUser = User::factory()->create();
-
-        $this->actingAs($tester)->get('/public/result/test/1')->assertStatus(403);
-        $this->actingAs($tester)->get('/result/test/1')->assertStatus(200);
-        $this->actingAs($anotherUser)->get('/result/test/1')->assertStatus(403);
-        $this->actingAs($anotherUser)->get('/public/result/test/1')->assertStatus(403);
-
-        auth()->logout();
-
-        $this->get('/result/test/1')->assertStatus(403);
-    }
-
-    /** @test */
-    public function guest_cannot_visit_the_result_page_of_an_associated_user()
-    {
-        $tester = User::factory()->create();
-
-        $quiz = Quiz::factory()->create([
-            'public' => true
-        ]);
-
-        $questionOne = Question::factory()->radio()->create([
-            'quiz_id' => $quiz->id,
-            'user_id' => $quiz->user_id,
-            "options" => [
-                ['option' => 'one'],
-                ['option' => 'two'],
-                ['option' => 'three'],
-                ['option' => 'four'],
-            ],
-            "answer" => json_encode(['one'])
-        ]);
-
-        $questionTwo = Question::factory()->radio()->create([
-            'quiz_id' => $quiz->id,
-            'user_id' => $quiz->user_id,
-            "options" => [
-                ['option' => 'one'],
-                ['option' => 'two'],
-                ['option' => 'three'],
-                ['option' => 'four'],
-            ],
-            "answer" => json_encode(['four'])
-        ]);
-
-        $test = Test::create([
-            'user_id' => $tester->id,
-            'quiz_id' => $quiz->id,
-            'result' => 0
-        ]);
-
-        $this->get('public/result/test/1')->assertStatus(403);
-        $this->actingAs($tester)->get('public/result/test/1')->assertStatus(200);
-    }
-
-    /** @test */
-    public function if_the_quiz_is_public_guest_cannot_use_the_authenticated_result()
-    {
-        $quiz = Quiz::factory()->create([
-            'public' => true
-        ]);
-
-        $questionOne = Question::factory()->radio()->create([
-            'quiz_id' => $quiz->id,
-            'user_id' => $quiz->user_id,
-            "options" => [
-                ['option' => 'one'],
-                ['option' => 'two'],
-                ['option' => 'three'],
-                ['option' => 'four'],
-            ],
-            "answer" => json_encode(['one'])
-        ]);
-
-        $questionTwo = Question::factory()->radio()->create([
-            'quiz_id' => $quiz->id,
-            'user_id' => $quiz->user_id,
-            "options" => [
-                ['option' => 'one'],
-                ['option' => 'two'],
-                ['option' => 'three'],
-                ['option' => 'four'],
-            ],
-            "answer" => json_encode(['four'])
-        ]);
-
-        $test = Test::create([
-            'user_id' => null,
-            'quiz_id' => $quiz->id,
-            'result' => 0
-        ]);
-
-        $this->get('/public/result/test/1')->assertStatus(200);
-        $this->get('/result/test/1')->assertStatus(403);
-    }
-
-    /** @test */
     public function if_the_quiz_is_public_any_user_can_access_and_submit()
     {
-        $quiz = Quiz::factory()->create([
+
+        $quiz = QuizFactory::withQuestions(2)->create([
             'public' => true
-        ]);
-
-        $questionOne = Question::factory()->radio()->create([
-            'quiz_id' => $quiz->id,
-            'user_id' => $quiz->user_id,
-            "options" => [
-                ['option' => 'one'],
-                ['option' => 'two'],
-                ['option' => 'three'],
-                ['option' => 'four'],
-            ],
-            "answer" => json_encode(['one'])
-        ]);
-
-        $questionTwo = Question::factory()->radio()->create([
-            'quiz_id' => $quiz->id,
-            'user_id' => $quiz->user_id,
-            "options" => [
-                ['option' => 'one'],
-                ['option' => 'two'],
-                ['option' => 'three'],
-                ['option' => 'four'],
-            ],
-            "answer" => json_encode(['four'])
         ]);
 
         $this->get("/public/test/quiz/{$quiz->getRouteKey()}")->assertStatus(200);
@@ -257,33 +46,9 @@ class AttemptQuizTest extends TestCase
 
         $owner = $this->signIn();
 
-        $quiz = Quiz::factory()->create([
-            'user_id' => $owner->id
-        ]);
-
-        $questionOne = Question::factory()->radio()->create([
-            'quiz_id' => $quiz->id,
-            'user_id' => $quiz->user_id,
-            "options" => [
-                ['option' => 'one'],
-                ['option' => 'two'],
-                ['option' => 'three'],
-                ['option' => 'four'],
-            ],
-            "answer" => json_encode(['one'])
-        ]);
-
-        $questionTwo = Question::factory()->radio()->create([
-            'quiz_id' => $quiz->id,
-            'user_id' => $quiz->user_id,
-            "options" => [
-                ['option' => 'one'],
-                ['option' => 'two'],
-                ['option' => 'three'],
-                ['option' => 'four'],
-            ],
-            "answer" => json_encode(['four'])
-        ]);
+        $quiz = QuizFactory::ownedBy($owner)
+            ->withQuestions(2)
+            ->create();
 
         UserTest::create([
             'user_id' => $tester->id,
@@ -314,40 +79,17 @@ class AttemptQuizTest extends TestCase
     {
         $tester = User::factory()->create();
 
-        $quiz = Quiz::factory()->create();
+        $owner = $this->signIn();
 
-        $questionOne = Question::factory()->radio()->create([
-            'quiz_id' => $quiz->id,
-            'user_id' => $quiz->user_id,
-            "options" => [
-                ['option' => 'one'],
-                ['option' => 'two'],
-                ['option' => 'three'],
-                ['option' => 'four'],
-            ],
-            "answer" => json_encode(['one'])
-        ]);
-
-        $questionTwo = Question::factory()->radio()->create([
-            'quiz_id' => $quiz->id,
-            'user_id' => $quiz->user_id,
-            "options" => [
-                ['option' => 'one'],
-                ['option' => 'two'],
-                ['option' => 'three'],
-                ['option' => 'four'],
-            ],
-            "answer" => json_encode(['four'])
-        ]);
-
+        $quiz = QuizFactory::ownedBy($owner)
+            ->withQuestions(2)
+            ->create();
 
         $this->actingAs($tester)->get("/test/quiz/{$quiz->getRouteKey()}")->assertStatus(403);
 
-        $user = $this->signIn();
-
         $this->assertDatabaseCount('user_tests', 0);
 
-        $this->actingAs($user)->post("/invite/quiz/{$quiz->getRouteKey()}", [
+        $this->actingAs($owner)->post("/invite/quiz/{$quiz->getRouteKey()}", [
             'email' => $tester->email,
         ])->assertStatus(200);
 
@@ -361,31 +103,8 @@ class AttemptQuizTest extends TestCase
     {
         $user = $this->signIn();
 
-        $quiz = Quiz::factory()->create();
-
-        $questionOne = Question::factory()->radio()->create([
-            'quiz_id' => $quiz->id,
-            'user_id' => $quiz->user_id,
-            "options" => [
-                ['option' => 'one'],
-                ['option' => 'two'],
-                ['option' => 'three'],
-                ['option' => 'four'],
-            ],
-            "answer" => json_encode(['one'])
-        ]);
-
-        $questionTwo = Question::factory()->radio()->create([
-            'quiz_id' => $quiz->id,
-            'user_id' => $quiz->user_id,
-            "options" => [
-                ['option' => 'one'],
-                ['option' => 'two'],
-                ['option' => 'three'],
-                ['option' => 'four'],
-            ],
-            "answer" => json_encode(['four'])
-        ]);
+        $quiz = QuizFactory::withQuestions(2)
+            ->create();
 
         $this->post("/test/quiz/{$quiz->getRouteKey()}", ['answers' => [
             1 => 'one',
@@ -401,31 +120,7 @@ class AttemptQuizTest extends TestCase
     {
         $tester = $this->signIn();
 
-        $quiz = Quiz::factory()->create();
-
-        $questionOne = Question::factory()->radio()->create([
-            'quiz_id' => $quiz->id,
-            'user_id' => $quiz->user_id,
-            "options" => [
-                ['option' => 'one'],
-                ['option' => 'two'],
-                ['option' => 'three'],
-                ['option' => 'four'],
-            ],
-            "answer" => json_encode(['one'])
-        ]);
-
-        $questionTwo = Question::factory()->radio()->create([
-            'quiz_id' => $quiz->id,
-            'user_id' => $quiz->user_id,
-            "options" => [
-                ['option' => 'one'],
-                ['option' => 'two'],
-                ['option' => 'three'],
-                ['option' => 'four'],
-            ],
-            "answer" => json_encode(['four'])
-        ]);
+        $quiz = QuizFactory::withQuestions(2)->create();
 
         UserTest::create([
             'user_id' => $tester->id,
@@ -449,31 +144,7 @@ class AttemptQuizTest extends TestCase
     {
         $tester = $this->signIn();
 
-        $quiz = Quiz::factory()->create();
-
-        $questionOne = Question::factory()->radio()->create([
-            'quiz_id' => $quiz->id,
-            'user_id' => $quiz->user_id,
-            "options" => [
-                ['option' => 'one'],
-                ['option' => 'two'],
-                ['option' => 'three'],
-                ['option' => 'four'],
-            ],
-            "answer" => json_encode(['one'])
-        ]);
-
-        $questionTwo = Question::factory()->radio()->create([
-            'quiz_id' => $quiz->id,
-            'user_id' => $quiz->user_id,
-            "options" => [
-                ['option' => 'one'],
-                ['option' => 'two'],
-                ['option' => 'three'],
-                ['option' => 'four'],
-            ],
-            "answer" => json_encode(['four'])
-        ]);
+        $quiz = QuizFactory::withQuestions(2)->create();
 
         $userTest = UserTest::create([
             'user_id' => $tester->id,
@@ -495,31 +166,7 @@ class AttemptQuizTest extends TestCase
     {
         $tester = $this->signIn();
 
-        $quiz = Quiz::factory()->create();
-
-        $questionOne = Question::factory()->radio()->create([
-            'quiz_id' => $quiz->id,
-            'user_id' => $quiz->user_id,
-            "options" => [
-                ['option' => 'one'],
-                ['option' => 'two'],
-                ['option' => 'three'],
-                ['option' => 'four'],
-            ],
-            "answer" => json_encode(['one'])
-        ]);
-
-        $questionTwo = Question::factory()->radio()->create([
-            'quiz_id' => $quiz->id,
-            'user_id' => $quiz->user_id,
-            "options" => [
-                ['option' => 'one'],
-                ['option' => 'two'],
-                ['option' => 'three'],
-                ['option' => 'four'],
-            ],
-            "answer" => json_encode(['four'])
-        ]);
+        $quiz = QuizFactory::withQuestions(2)->create();
 
         $userTest = UserTest::create([
             'user_id' => $tester->id,
@@ -536,31 +183,7 @@ class AttemptQuizTest extends TestCase
     {
         $tester = $this->signIn();
 
-        $quiz = Quiz::factory()->create();
-
-        $questionOne = Question::factory()->radio()->create([
-            'quiz_id' => $quiz->id,
-            'user_id' => $quiz->user_id,
-            "options" => [
-                ['option' => 'one'],
-                ['option' => 'two'],
-                ['option' => 'three'],
-                ['option' => 'four'],
-            ],
-            "answer" => json_encode(['one'])
-        ]);
-
-        $questionTwo = Question::factory()->radio()->create([
-            'quiz_id' => $quiz->id,
-            'user_id' => $quiz->user_id,
-            "options" => [
-                ['option' => 'one'],
-                ['option' => 'two'],
-                ['option' => 'three'],
-                ['option' => 'four'],
-            ],
-            "answer" => json_encode(['four'])
-        ]);
+        $quiz = QuizFactory::withQuestions(2)->create();
 
         $userTestOne = UserTest::create([
             'user_id' => $tester->id,
@@ -603,7 +226,7 @@ class AttemptQuizTest extends TestCase
             "answer" => json_encode(['three'])
         ]);
 
-        $questionTwo = Question::factory()->radio()->create([
+        $questionTwo = Question::factory()->select()->create([
             'quiz_id' => $quiz->id,
             'user_id' => $quiz->user_id,
             "options" => [

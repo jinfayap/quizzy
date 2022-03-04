@@ -24,7 +24,7 @@ class QuizTest extends TestCase
     }
 
     /** @test */
-    public function authenticated_user_can_create_new_quiz()
+    public function user_with_create_quiz_permission_can_create_quiz()
     {
         $user = UserFactory::withRole('educator')
             ->withPermissions(['create quiz'])
@@ -37,6 +37,21 @@ class QuizTest extends TestCase
         $this->actingAs($user)->post("/quiz", $quiz);
 
         $this->assertDatabaseHas('quizzes', $quiz);
+    }
+
+    /** @test */
+    public function user_without_create_quiz_permission_cannot_create_quiz()
+    {
+        $user = UserFactory::withRole('educator')
+            ->create();
+
+        $quiz = Quiz::factory()->raw([
+            'user_id' => $user->id
+        ]);
+
+        $this->actingAs($user)->post("/quiz", $quiz)->assertStatus(403);
+
+        $this->assertDatabaseMissing('quizzes', $quiz);
     }
 
     /** @test */
