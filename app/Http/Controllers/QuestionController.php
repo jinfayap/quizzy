@@ -4,9 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Question;
 use App\Models\Quiz;
+use App\Rules\AnswerInOptions;
+use App\Rules\ContainOneAnswer;
+use App\Rules\ValidQuestionType;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
-use Illuminate\Support\Arr;
 
 class QuestionController extends Controller
 {
@@ -21,7 +22,7 @@ class QuestionController extends Controller
                 'question_text' => ['required'],
                 'options' => ['nullable'],
                 'answer' => ['required'],
-                'question_type' => ['required', Rule::in(['text', 'textarea', 'select', 'radio', 'checkbox'])],
+                'question_type' => ['required', new ValidQuestionType],
                 'answer_explanation' => ['nullable'],
                 'more_info_link' => ['nullable', 'url']
             ]);
@@ -29,19 +30,8 @@ class QuestionController extends Controller
             $attributes = request()->validate([
                 'question_text' => ['required'],
                 'options' => ['present'],
-                'answer' => ['required', function ($attribute, $value, $fail) {
-                    $options = Arr::flatten(request('options'));
-                    foreach ($value as $answer) {
-                        if (!in_array($answer, $options)) {
-                            $fail("The {$attribute} should contain values found in the options choices");
-                        }
-                    }
-                }, function ($attribute, $value, $fail) {
-                    if (in_array(request('question_type'), ['radio', 'select']) && count($value) > 1) {
-                        $fail("The {$attribute} should only contain one answer only");
-                    }
-                },],
-                'question_type' => ['required', Rule::in(['text', 'textarea', 'select', 'radio', 'checkbox'])],
+                'answer' => ['required', new AnswerInOptions, new ContainOneAnswer],
+                'question_type' => ['required', new ValidQuestionType],
                 'answer_explanation' => ['nullable'],
                 'more_info_link' => ['nullable', 'url']
             ]);
@@ -70,7 +60,7 @@ class QuestionController extends Controller
                 'question_text' => ['required'],
                 'options' => ['nullable'],
                 'answer' => ['required'],
-                'question_type' => ['required', Rule::in(['text', 'textarea', 'select', 'radio', 'checkbox'])],
+                'question_type' => ['required', new ValidQuestionType],
                 'answer_explanation' => ['nullable'],
                 'more_info_link' => ['nullable']
             ]);
@@ -78,19 +68,8 @@ class QuestionController extends Controller
             $attributes = request()->validate([
                 'question_text' => ['required'],
                 'options' => ['present'],
-                'answer' => ['required', function ($attribute, $value, $fail) {
-                    $options = Arr::flatten(request('options'));
-                    foreach ($value as $answer) {
-                        if (!in_array($answer, $options)) {
-                            $fail("The {$attribute} should contain values found in the options choices");
-                        }
-                    }
-                },function ($attribute, $value, $fail) {
-                    if (in_array(request('question_type'), ['radio', 'select']) && count($value) > 1) {
-                        $fail("The {$attribute} should only contain one answer only");
-                    }
-                }],
-                'question_type' => ['required', Rule::in(['text', 'textarea', 'select', 'radio', 'checkbox'])],
+                'answer' => ['required', new AnswerInOptions, new ContainOneAnswer],
+                'question_type' => ['required', new ValidQuestionType],
                 'answer_explanation' => ['nullable'],
                 'more_info_link' => ['nullable']
             ]);

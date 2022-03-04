@@ -103,6 +103,10 @@
           <span class="mr-2 font-semibold">Last updated:</span>
           <span class="text-sm">{{ quiz.updated_at }}</span>
         </div>
+        <div>
+          <span class="mr-2 font-semibold">Number of questions:</span>
+          <span class="text-sm">{{ quiz.questions_count }}</span>
+        </div>
       </section>
 
       <section class="mt-3 flex">
