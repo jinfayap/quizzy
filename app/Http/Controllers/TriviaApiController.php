@@ -11,6 +11,11 @@ class TriviaApiController extends Controller
 {
     public function store(Quiz $quiz)
     {
+
+        if ($quiz->user_id != auth()->id()) {
+            abort(403);
+        }
+
         $attribute = request()->validate([
             'url' => ['required', 'url']
         ]);
@@ -20,7 +25,7 @@ class TriviaApiController extends Controller
         $questions = array();
 
         foreach ($results as $question) {
-            $options = Arr::shuffle([... $question['incorrect_answers'], $question['correct_answer']]);
+            $options = Arr::shuffle([...$question['incorrect_answers'], $question['correct_answer']]);
 
             $optionsArr = array();
 

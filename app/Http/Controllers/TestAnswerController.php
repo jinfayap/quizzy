@@ -10,7 +10,11 @@ class TestAnswerController extends Controller
     public function update(TestAnswer $testAnswer)
     {
         $this->authorize('mark question');
-        
+
+        if ($testAnswer->test->quiz->user_id != auth()->id()) {
+            abort(403);
+        }
+
         $testAnswer->update([
             'correct' => true,
         ]);
@@ -22,6 +26,10 @@ class TestAnswerController extends Controller
 
     public function destroy(TestAnswer $testAnswer)
     {
+        if ($testAnswer->test->quiz->user_id != auth()->id()) {
+            abort(403);
+        }
+
         $testAnswer->update([
             'correct' => false,
         ]);

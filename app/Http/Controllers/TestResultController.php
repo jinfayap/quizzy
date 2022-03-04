@@ -11,7 +11,7 @@ class TestResultController extends Controller
     public function index()
     {
         if (Gate::forUser(auth()->user())->allows('view test result')) {
-            $tests = Test::latest()->with(['quiz', 'tester'])->get();
+            $tests = Test::latest()->whereRelation('quiz', 'user_id', auth()->id())->with(['quiz', 'tester'])->get();
         } else {
             $tests = Test::latest()->where('user_id', auth()->id())->with(['quiz'])->get();
         }
@@ -25,18 +25,21 @@ class TestResultController extends Controller
             abort(403);
         }
 
-        if ($test->user_id != auth()->id() && !Gate::forUser(auth()->user())->allows('view test result')) {
+        if (
+            $test->user_id != auth()->id()
+            && !(Gate::forUser(auth()->user())->allows('view test result') && $test->quiz->user_id == auth()->id())
+        ) {
             abort(403);
         }
 
-        $test->load(['quiz','testAnswers.question']);
+        $test->load(['quiz', 'testAnswers.question']);
 
         return view('result.show', compact('test'));
     }
 
     public function public(Test $test)
     {
-        if (! $test->quiz->public) {
+        if (!$test->quiz->public) {
             abort(403);
         }
 
@@ -44,7 +47,7 @@ class TestResultController extends Controller
             abort(403);
         }
 
-        $test->load(['quiz','testAnswers.question']);
+        $test->load(['quiz', 'testAnswers.question']);
 
         return view('result.show', compact('test'));
     }

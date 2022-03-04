@@ -141,13 +141,15 @@ class ManageTestResultTest extends TestCase
     }
 
     /** @test */
-    public function user_with_view_test_result_permission_can_view_tester_result()
+    public function user_with_view_test_result_permission_and_owner_of_the_quiz_can_view_tester_result()
     {
         $educator = UserFactory::withRole('educator')
             ->withPermissions(['view test result'])
             ->create();
 
-        $quiz = QuizFactory::withQuestions(2)->create();
+        $quiz = QuizFactory::withQuestions(2)->create([
+            'user_id' => $educator->id
+        ]);
 
         $test = Test::factory()->create([
             'quiz_id' => $quiz->id
@@ -157,13 +159,37 @@ class ManageTestResultTest extends TestCase
     }
 
     /** @test */
+    public function user_with_view_test_result_permission_and_not_owner_of_the_quiz_cannot_view_tester_result()
+    {
+        $educator = UserFactory::withRole('educator')
+            ->withPermissions(['view test result'])
+            ->create();
+
+        $anotherEducator = User::factory()->create();
+
+        $anotherEducator->assignRole('educator');
+
+        $quiz = QuizFactory::withQuestions(2)->create([
+            'user_id' => $educator->id
+        ]);
+
+        $test = Test::factory()->create([
+            'quiz_id' => $quiz->id
+        ]);
+
+        $this->actingAs($anotherEducator)->get("/result/test/{$test->getRouteKey()}")->assertStatus(403);
+    }
+
+    /** @test */
     public function user_with_mark_question_permission_can_mark_the_question_as_correct()
     {
         $educator = UserFactory::withRole('educator')
             ->withPermissions(['mark question'])
             ->create();
 
-        $quiz = Quiz::factory()->create();
+        $quiz = Quiz::factory()->create([
+            'user_id' => $educator->id
+        ]);
 
         $questionOne = Question::factory()->radio()->create([
             'quiz_id' => $quiz->id,
@@ -263,7 +289,9 @@ class ManageTestResultTest extends TestCase
             ->withPermissions(['mark question'])
             ->create();
 
-        $quiz = Quiz::factory()->create();
+        $quiz = Quiz::factory()->create([
+            'user_id' => $educator->id
+        ]);
 
         $questionOne = Question::factory()->radio()->create([
             'quiz_id' => $quiz->id,
@@ -352,6 +380,114 @@ class ManageTestResultTest extends TestCase
         $this->assertTrue($testAnswers[1]->correct);
 
         $this->actingAs($tester)->patch("/test-answer/{$testAnswers[1]->id}");
+
+        $this->assertTrue($testAnswers[1]->fresh()->correct);
+    }
+
+    /** @test */
+    public function another_user_with_mark_question_permission_cannot_mark_the_question_correct_if_the_test_that_do_not_belongs_to_them()
+    {
+        $educator = UserFactory::withRole('educator')
+            ->withPermissions(['mark question'])
+            ->create();
+
+        $anotherEducator = User::factory()->create();
+
+        $anotherEducator->assignRole('educator');
+
+        $quiz = Quiz::factory()->create();
+
+        $questionOne = Question::factory()->radio()->create([
+            'quiz_id' => $quiz->id,
+            'user_id' => $quiz->user_id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => json_encode(['three'])
+        ]);
+
+        $questionTwo = Question::factory()->radio()->create([
+            'quiz_id' => $quiz->id,
+            'user_id' => $quiz->user_id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => json_encode(['four'])
+        ]);
+
+        $tester = User::factory()->create();
+
+        $this->actingAs($tester)->post("/test/quiz/{$quiz->getRouteKey()}", ['answers' => [
+            1 => 'one',
+            2 => 'four',
+        ]]);
+
+        $testAnswers = TestAnswer::all();
+
+        $this->assertFalse($testAnswers[0]->correct);
+        $this->assertTrue($testAnswers[1]->correct);
+
+        $this->actingAs($anotherEducator)->patch("/test-answer/{$testAnswers[1]->id}")->assertStatus(403);
+
+        $this->assertTrue($testAnswers[1]->fresh()->correct);
+    }
+
+    /** @test */
+    public function another_user_with_mark_question_permission_cannot_mark_the_question_incorrect_if_the_test_that_do_not_belongs_to_them()
+    {
+        $educator = UserFactory::withRole('educator')
+            ->withPermissions(['mark question'])
+            ->create();
+
+        $anotherEducator = User::factory()->create();
+
+        $anotherEducator->assignRole('educator');
+
+        $quiz = Quiz::factory()->create();
+
+        $questionOne = Question::factory()->radio()->create([
+            'quiz_id' => $quiz->id,
+            'user_id' => $quiz->user_id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => json_encode(['three'])
+        ]);
+
+        $questionTwo = Question::factory()->radio()->create([
+            'quiz_id' => $quiz->id,
+            'user_id' => $quiz->user_id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => json_encode(['four'])
+        ]);
+
+        $tester = User::factory()->create();
+
+        $this->actingAs($tester)->post("/test/quiz/{$quiz->getRouteKey()}", ['answers' => [
+            1 => 'one',
+            2 => 'four',
+        ]]);
+
+        $testAnswers = TestAnswer::all();
+
+        $this->assertFalse($testAnswers[0]->correct);
+        $this->assertTrue($testAnswers[1]->correct);
+
+        $this->actingAs($anotherEducator)->patch("/test-answer/{$testAnswers[1]->id}")->assertStatus(403);
 
         $this->assertTrue($testAnswers[1]->fresh()->correct);
     }
