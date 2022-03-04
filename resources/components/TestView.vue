@@ -114,7 +114,6 @@ export default {
   methods: {
     storeAnswer(id, answer) {
       this.answers.answers[id] = answer;
-      console.log(this.answers);
     },
 
     submit() {
