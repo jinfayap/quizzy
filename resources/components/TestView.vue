@@ -53,6 +53,7 @@
         <button
           type="button"
           class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-400 text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm"
+          :disabled="isDisabled"
           @click="submit"
         >
           Confirm
@@ -78,6 +79,7 @@ export default {
         minute: 0,
         second: 0,
       },
+      isDisabled: false,
     };
   },
 
@@ -116,9 +118,12 @@ export default {
     },
 
     submit() {
+      this.isDisabled = true;
+
       this.answers
         .post(`/test/quiz/${this.quiz.id}`)
         .then((data) => {
+          this.isDisabled = false;
           this.$refs.submitTest.isOpen = false;
 
           const testId = data.test.id;
@@ -131,25 +136,9 @@ export default {
           location.href = "/result/test/" + testId;
         })
         .catch((error) => {
+          this.isDisabled = false;
           console.log(error);
         });
-
-      // axios
-      //   .post(`/test/quiz/${this.quiz.id}`, { answers: this.answers })
-      //   .then((response) => {
-      //     this.$refs.submitTest.isOpen = false;
-
-      //     const testId = response.data.test.id;
-
-      //     if (this.quiz.public) {
-      //       location.href = "/public/result/test/" + testId;
-      //       return;
-      //     }
-      //     location.href = "/result/test/" + testId;
-      //   })
-      //   .catch((error) => {
-      //     console.log(error);
-      //   });
     },
   },
 };
