@@ -26,7 +26,7 @@ class AdminController extends Controller
         return view('admin.role-permission');
     }
 
-    public function useRolePermission()
+    public function userRolePermission()
     {
         return view('admin.user-role-permission');
     }
