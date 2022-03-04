@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\QuizController;
@@ -71,25 +72,15 @@ Route::delete('/role/{role}/permission/{permission}', [RolePermissionController:
 Route::post('/user/{user}/role/{role}', [UserRoleController::class, 'store'])->middleware(['auth', 'permission:assign user role']);
 Route::delete('/user/{user}/role/{role}', [UserRoleController::class, 'destroy'])->middleware(['auth', 'permission:remove user role']);
 
-Route::get('/admin', function () {
-    return view('admin.index');
-})->middleware(['auth', 'permission:view admin panel'])->name('admin.index');
+Route::get('/admin', [AdminController::class, 'index'])->middleware(['auth', 'permission:view admin panel'])->name('admin.index');
 
-Route::get('/admin/role', function () {
-    return view('admin.role');
-})->middleware(['auth', 'permission:view admin panel'])->name('admin.role');
+Route::get('/admin/role', [AdminController::class, 'role'])->middleware(['auth', 'permission:view admin panel'])->name('admin.role');
 
-Route::get('/admin/permission', function () {
-    return view('admin.permission');
-})->middleware(['auth', 'permission:view admin panel'])->name('admin.permission');
+Route::get('/admin/permission', [AdminController::class, 'permission'])->middleware(['auth', 'permission:view admin panel'])->name('admin.permission');
 
-Route::get('/admin/role-permission', function () {
-    return view('admin.role-permission');
-})->middleware(['auth', 'permission:view admin panel'])->name('admin.role-permission');
+Route::get('/admin/role-permission', [AdminController::class, 'rolePermission'])->middleware(['auth', 'permission:view admin panel'])->name('admin.role-permission');
 
-Route::get('/admin/user-role-permission', function () {
-    return view('admin.user-role-permission');
-})->middleware(['auth', 'permission:view admin panel'])->name('admin.user-role-permission');
+Route::get('/admin/user-role-permission', [AdminController::class, 'userRolePermission'])->middleware(['auth', 'permission:view admin panel'])->name('admin.user-role-permission');
 
 Route::get('/api/role', [RoleController::class, 'index'])->middleware(['permission:view api']);
 Route::get('/api/permission', [PermissionController::class, 'index'])->middleware(['permission:view api']);

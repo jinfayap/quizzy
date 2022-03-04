@@ -39,11 +39,12 @@ class UserTestController extends Controller
 
         $user = User::where('email', '=', $attributes['email'])->first();
 
-        UserTest::create([
-            'user_id' => $user->id,
-            'quiz_id' => $quiz->id,
-            'start_date' => $attributes['start_date'] ?? null,
-            'end_date' => $attributes['end_date'] ?? null,
-        ]);
+        $attributes['user_id'] = $user->id;
+        $attributes['quiz_id'] = $quiz->id;
+
+        unset($attributes['email']);
+
+
+        UserTest::create($attributes);
     }
 }

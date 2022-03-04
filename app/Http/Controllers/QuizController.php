@@ -53,7 +53,7 @@ class QuizController extends Controller
 
         $quiz = Quiz::create($attributes);
 
-        return redirect()->route('quiz.edit', $quiz)->with('flash', 'Quiz created!');
+        return redirect()->route('quiz.show', $quiz)->with('flash', 'Quiz created!');
     }
 
     public function edit(Quiz $quiz)
