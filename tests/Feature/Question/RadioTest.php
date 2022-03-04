@@ -13,7 +13,7 @@ class RadioTest extends TestCase
     use RefreshDatabase;
 
     /** @test */
-    public function it_is_a_radio_question()
+    public function it_can_be_created()
     {
         $user = $this->signIn();
 
@@ -22,7 +22,7 @@ class RadioTest extends TestCase
         $question = Question::factory()->radio()->raw([
             'user_id' => $user->id,
             'quiz_id' => $quiz->id
-            ]);
+        ]);
 
         $question['answer'] = json_decode($question['answer']);
 
@@ -41,7 +41,7 @@ class RadioTest extends TestCase
     }
 
     /** @test */
-    public function a_radio_question_can_be_edit()
+    public function it_can_be_updated()
     {
         $user = $this->signIn();
 
@@ -64,7 +64,7 @@ class RadioTest extends TestCase
                 ['option' => 'four'],
             ],
             'answer' => ['one']
-            ])->assertStatus(200);
+        ])->assertStatus(200);
 
         $dbQuestion = Question::first();
 
@@ -80,7 +80,7 @@ class RadioTest extends TestCase
     }
 
     /** @test */
-    public function radio_answer_requires_an_answer_that_is_found_in_the_options_when_creating()
+    public function it_requires_answer_found_in_the_options_when_it_is_created()
     {
         $user = $this->signIn();
 
@@ -98,7 +98,8 @@ class RadioTest extends TestCase
             "answer" => ["five"]
         ]);
 
-        $this->post("/quiz/{$quiz->getRouteKey()}/question", $question)->assertSessionHasErrors(['answer' => "The answer should contain values found in the options choices"]);
+        $this->post("/quiz/{$quiz->getRouteKey()}/question", $question)
+            ->assertSessionHasErrors(['answer' => "The answer should contain values found in the options choices"]);
 
         $this->assertDatabaseCount('questions', 0);
 
@@ -120,7 +121,7 @@ class RadioTest extends TestCase
     }
 
     /** @test */
-    public function radio_answer_requires_an_answer_that_is_found_in_the_options_when_updating()
+    public function it_requires_answer_found_in_the_options_when_is_updated()
     {
         $user = $this->signIn();
 
@@ -165,39 +166,40 @@ class RadioTest extends TestCase
 
 
     /** @test */
-    public function radio_question_can_only_have_one_answer_when_creating()
+    public function it_can_only_have_single_answer_when_it_is_created()
     {
         $user = $this->signIn();
 
         $quiz = Quiz::factory()->create(['user_id' => $user->id]);
 
         $question = Question::factory()->radio()->raw([
-        'quiz_id' => $quiz->id,
-        'user_id' => $user->id,
-        "options" => [
-            ['option' => 'one'],
-            ['option' => 'two'],
-            ['option' => 'three'],
-            ['option' => 'four'],
-        ],
-        "answer" => ["one", "two"]
-    ]);
+            'quiz_id' => $quiz->id,
+            'user_id' => $user->id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => ["one", "two"]
+        ]);
 
-        $this->post("/quiz/{$quiz->getRouteKey()}/question", $question)->assertSessionHasErrors(['answer' => 'The answer should only contain one answer only']);
+        $this->post("/quiz/{$quiz->getRouteKey()}/question", $question)
+            ->assertSessionHasErrors(['answer' => 'The answer should only contain one answer only']);
 
         $this->assertDatabaseCount('questions', 0);
 
         $question = Question::factory()->radio()->raw([
-        'quiz_id' => $quiz->id,
-        'user_id' => $user->id,
-        "options" => [
-            ['option' => 'one'],
-            ['option' => 'two'],
-            ['option' => 'three'],
-            ['option' => 'four'],
-        ],
-        "answer" => ["one"]
-    ]);
+            'quiz_id' => $quiz->id,
+            'user_id' => $user->id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => ["one"]
+        ]);
 
         $this->post("/quiz/{$quiz->getRouteKey()}/question", $question)->assertStatus(200);
 
@@ -205,7 +207,7 @@ class RadioTest extends TestCase
     }
 
     /** @test */
-    public function radio_question_can_have_single_answer_when_updating()
+    public function it_can_only_have_single_answer_when_updated()
     {
         $user = $this->signIn();
 
@@ -246,5 +248,38 @@ class RadioTest extends TestCase
             ],
             'answer' => ['one'],
         ])->assertStatus(200);
+    }
+
+    /** @test */
+    public function it_can_be_updated_to_a_text_type_question()
+    {
+        $user = $this->signIn();
+
+        $quiz = Quiz::factory()->create(['user_id' => $user->id]);
+
+        $question = Question::factory()->radio()->create([
+            'quiz_id' => $quiz->id,
+            'user_id' => $user->id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => json_encode(['one'])
+        ]);
+
+        $this->assertEquals('radio', $question->fresh()->question_type);
+
+        $this->patch("/quiz/{$quiz->getRouteKey()}/question/{$question->getRouteKey()}", $attributes = [
+            'question_text' => 'question text changed',
+            'answer' => 'answer text changed',
+            'question_type' => 'text',
+            'options' => null,
+        ])->assertStatus(200);
+
+        $this->assertNotEquals('radio', $question->fresh()->question_type);
+
+        $this->assertEquals('text', $question->fresh()->question_type);
     }
 }

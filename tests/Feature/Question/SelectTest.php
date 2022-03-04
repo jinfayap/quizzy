@@ -13,16 +13,16 @@ class SelectTest extends TestCase
     use RefreshDatabase;
 
     /** @test */
-    public function it_is_a_select_question()
+    public function it_can_be_created()
     {
         $user = $this->signIn();
 
         $quiz = Quiz::factory()->create(['user_id' => $user->id]);
 
         $question = Question::factory()->select()->raw([
-         'user_id' => $user->id,
-         'quiz_id' => $quiz->id
-         ]);
+            'user_id' => $user->id,
+            'quiz_id' => $quiz->id
+        ]);
 
         $question['answer'] = json_decode($question['answer']);
 
@@ -41,29 +41,29 @@ class SelectTest extends TestCase
     }
 
     /** @test */
-    public function a_select_question_can_be_edit()
+    public function it_can_be_updated()
     {
         $user = $this->signIn();
 
         $quiz = Quiz::factory()->create([
-        'user_id' => $user->id
-    ]);
+            'user_id' => $user->id
+        ]);
 
         $question = Question::factory()->select()->create([
-        'user_id' => $user->id,
-        'quiz_id' => $quiz->id
-    ]);
+            'user_id' => $user->id,
+            'quiz_id' => $quiz->id
+        ]);
 
         $this->patch("/quiz/{$quiz->getRouteKey()}/question/{$question->getRouteKey()}", $attributes = [
-        'question_text' => 'question text',
-        'question_type' => 'select',
-        'options' => [
-            ['option' => 'one'],
-            ['option' => 'two'],
-            ['option' => 'three'],
-            ['option' => 'four'],
-        ],
-        'answer' => ['one']
+            'question_text' => 'question text',
+            'question_type' => 'select',
+            'options' => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            'answer' => ['one']
         ])->assertStatus(200);
 
         $dbQuestion = Question::first();
@@ -80,13 +80,13 @@ class SelectTest extends TestCase
     }
 
     /** @test */
-    public function select_answer_requires_an_answer_that_is_found_in_the_options_when_creating()
+    public function it_requires_answer_found_in_the_options_when_it_is_created()
     {
         $user = $this->signIn();
 
         $quiz = Quiz::factory()->create(['user_id' => $user->id]);
 
-        $question = Question::factory()->checkbox()->raw([
+        $question = Question::factory()->select()->raw([
             'quiz_id' => $quiz->id,
             'user_id' => $user->id,
             "options" => [
@@ -98,11 +98,12 @@ class SelectTest extends TestCase
             "answer" => ["five"]
         ]);
 
-        $this->post("/quiz/{$quiz->getRouteKey()}/question", $question)->assertSessionHasErrors(['answer' => "The answer should contain values found in the options choices"]);
+        $this->post("/quiz/{$quiz->getRouteKey()}/question", $question)
+            ->assertSessionHasErrors(['answer' => "The answer should contain values found in the options choices"]);
 
         $this->assertDatabaseCount('questions', 0);
 
-        $question = Question::factory()->checkbox()->raw([
+        $question = Question::factory()->select()->raw([
             'quiz_id' => $quiz->id,
             'user_id' => $user->id,
             "options" => [
@@ -120,7 +121,7 @@ class SelectTest extends TestCase
     }
 
     /** @test */
-    public function select_answer_requires_an_answer_that_is_found_in_the_options_when_updating()
+    public function it_requires_answer_found_in_the_options_when_is_updated()
     {
         $user = $this->signIn();
 
@@ -164,7 +165,7 @@ class SelectTest extends TestCase
     }
 
     /** @test */
-    public function select_question_can_only_have_one_answer_when_creating()
+    public function it_can_only_have_single_answer_when_it_is_created()
     {
         $user = $this->signIn();
 
@@ -182,7 +183,8 @@ class SelectTest extends TestCase
             "answer" => ["one", "two"]
         ]);
 
-        $this->post("/quiz/{$quiz->getRouteKey()}/question", $question)->assertSessionHasErrors(['answer' => 'The answer should only contain one answer only']);
+        $this->post("/quiz/{$quiz->getRouteKey()}/question", $question)
+            ->assertSessionHasErrors(['answer' => 'The answer should only contain one answer only']);
 
         $this->assertDatabaseCount('questions', 0);
 
@@ -204,7 +206,7 @@ class SelectTest extends TestCase
     }
 
     /** @test */
-    public function select_question_can_have_single_answer_when_updating()
+    public function it_can_only_have_single_answer_when_updated()
     {
         $user = $this->signIn();
 
@@ -245,5 +247,38 @@ class SelectTest extends TestCase
             ],
             'answer' => ['one'],
         ])->assertStatus(200);
+    }
+
+    /** @test */
+    public function it_can_be_updated_to_a_text_type_question()
+    {
+        $user = $this->signIn();
+
+        $quiz = Quiz::factory()->create(['user_id' => $user->id]);
+
+        $question = Question::factory()->select()->create([
+            'quiz_id' => $quiz->id,
+            'user_id' => $user->id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => json_encode(['one'])
+        ]);
+
+        $this->assertEquals('select', $question->fresh()->question_type);
+
+        $this->patch("/quiz/{$quiz->getRouteKey()}/question/{$question->getRouteKey()}", $attributes = [
+            'question_text' => 'question text changed',
+            'answer' => 'answer text changed',
+            'question_type' => 'text',
+            'options' => null,
+        ])->assertStatus(200);
+
+        $this->assertNotEquals('select', $question->fresh()->question_type);
+
+        $this->assertEquals('text', $question->fresh()->question_type);
     }
 }

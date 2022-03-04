@@ -13,7 +13,7 @@ class TextareaTest extends TestCase
     use RefreshDatabase;
 
     /** @test */
-    public function it_is_a_textarea_question()
+    public function it_can_be_created()
     {
         $user = $this->signIn();
 
@@ -22,7 +22,7 @@ class TextareaTest extends TestCase
         $question = Question::factory()->textarea()->raw([
             'user_id' => $user->id,
             'quiz_id' => $quiz->id
-            ]);
+        ]);
 
         $this->post("/quiz/{$quiz->getRouteKey()}/question", $question);
 
@@ -30,7 +30,7 @@ class TextareaTest extends TestCase
     }
 
     /** @test */
-    public function a_textarea_question_can_be_edit()
+    public function it_can_be_updated()
     {
         $user = $this->signIn();
 
@@ -50,5 +50,37 @@ class TextareaTest extends TestCase
         ])->assertStatus(200);
 
         $this->assertDatabaseHas('questions', $attributes);
+    }
+
+    /** @test */
+    public function it_can_be_updated_to_a_choice_type_question()
+    {
+        $user = $this->signIn();
+
+        $quiz = Quiz::factory()->create([
+            'user_id' => $user->id
+        ]);
+
+        $question = Question::factory()->textarea()->create([
+            'user_id' => $user->id,
+            'quiz_id' => $quiz->id
+        ]);
+
+        $this->assertEquals('textarea', $question->fresh()->question_type);
+
+        $this->patch("/quiz/{$quiz->getRouteKey()}/question/{$question->getRouteKey()}", $attributes = [
+            'question_text' => 'question text',
+            'question_type' => 'select',
+            'options' => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            'answer' => ['one']
+        ])->assertStatus(200);
+
+        $this->assertNotEquals('textarea', $question->fresh()->question_type);
+        $this->assertEquals('select', $question->fresh()->question_type);
     }
 }

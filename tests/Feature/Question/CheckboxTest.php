@@ -13,7 +13,7 @@ class CheckboxTest extends TestCase
     use RefreshDatabase;
 
     /** @test */
-    public function it_is_a_checkbox_question()
+    public function it_can_be_created()
     {
         $user = $this->signIn();
 
@@ -23,7 +23,7 @@ class CheckboxTest extends TestCase
         $question = Question::factory()->checkbox()->raw([
             'user_id' => $user->id,
             'quiz_id' => $quiz->id,
-            ]);
+        ]);
 
         $question['answer'] = json_decode($question['answer']);
 
@@ -42,7 +42,7 @@ class CheckboxTest extends TestCase
     }
 
     /** @test */
-    public function a_checkbox_question_can_be_edit()
+    public function it_can_be_updated()
     {
         $user = $this->signIn();
 
@@ -65,7 +65,7 @@ class CheckboxTest extends TestCase
                 ['option' => 'four'],
             ],
             'answer' => ['one', 'two']
-            ])->assertStatus(200);
+        ])->assertStatus(200);
 
         $dbQuestion = Question::first();
 
@@ -81,7 +81,7 @@ class CheckboxTest extends TestCase
     }
 
     /** @test */
-    public function checkbox_answer_requires_an_answer_that_is_found_in_the_options_when_creating()
+    public function it_requires_answer_found_in_the_options_when_it_is_created()
     {
         $user = $this->signIn();
 
@@ -99,7 +99,8 @@ class CheckboxTest extends TestCase
             "answer" => ["one", "five"]
         ]);
 
-        $this->post("/quiz/{$quiz->getRouteKey()}/question", $question)->assertSessionHasErrors(['answer' => "The answer should contain values found in the options choices"]);
+        $this->post("/quiz/{$quiz->getRouteKey()}/question", $question)
+            ->assertSessionHasErrors(['answer' => "The answer should contain values found in the options choices"]);
 
         $this->assertDatabaseCount('questions', 0);
 
@@ -121,7 +122,7 @@ class CheckboxTest extends TestCase
     }
 
     /** @test */
-    public function checkbox_answer_requires_an_answer_that_is_found_in_the_options_when_updating()
+    public function it_requires_answer_found_in_the_options_when_is_updated()
     {
         $user = $this->signIn();
 
@@ -165,13 +166,13 @@ class CheckboxTest extends TestCase
     }
 
     /** @test */
-    public function checkbox_question_can_have_single_or_multiple_answer_when_creating()
+    public function it_can_have_single_or_multiple_answer_when_it_is_created()
     {
         $user = $this->signIn();
 
         $quiz = Quiz::factory()->create(['user_id' => $user->id]);
 
-        $questionSingleChoice = Question::factory()->checkbox()->raw([
+        $questionSingleAnswer = Question::factory()->checkbox()->raw([
             'quiz_id' => $quiz->id,
             'user_id' => $user->id,
             "options" => [
@@ -183,11 +184,11 @@ class CheckboxTest extends TestCase
             "answer" => ["one"]
         ]);
 
-        $this->post("/quiz/{$quiz->getRouteKey()}/question", $questionSingleChoice)->assertStatus(200);
+        $this->post("/quiz/{$quiz->getRouteKey()}/question", $questionSingleAnswer)->assertStatus(200);
 
         $this->assertDatabaseCount('questions', 1);
 
-        $questionMultipleChoice = Question::factory()->checkbox()->raw([
+        $questionMultipleAnswer = Question::factory()->checkbox()->raw([
             'quiz_id' => $quiz->id,
             'user_id' => $user->id,
             "options" => [
@@ -199,13 +200,13 @@ class CheckboxTest extends TestCase
             "answer" => ["one", "two"]
         ]);
 
-        $this->post("/quiz/{$quiz->getRouteKey()}/question", $questionMultipleChoice)->assertStatus(200);
+        $this->post("/quiz/{$quiz->getRouteKey()}/question", $questionMultipleAnswer)->assertStatus(200);
 
         $this->assertDatabaseCount('questions', 2);
     }
 
     /** @test */
-    public function checkbox_question_can_have_single_or_multiple_answers_when_updating()
+    public function it_can_have_single_or_multiple_answers_when_it_is_updated()
     {
         $user = $this->signIn();
 
@@ -246,5 +247,38 @@ class CheckboxTest extends TestCase
             ],
             'answer' => ["one", "two"],
         ])->assertStatus(200);
+    }
+
+    /** @test */
+    public function it_can_be_updated_to_a_text_type_question()
+    {
+        $user = $this->signIn();
+
+        $quiz = Quiz::factory()->create(['user_id' => $user->id]);
+
+        $question = Question::factory()->checkbox()->create([
+            'quiz_id' => $quiz->id,
+            'user_id' => $user->id,
+            "options" => [
+                ['option' => 'one'],
+                ['option' => 'two'],
+                ['option' => 'three'],
+                ['option' => 'four'],
+            ],
+            "answer" => json_encode(['one'])
+        ]);
+
+        $this->assertEquals('checkbox', $question->fresh()->question_type);
+
+        $this->patch("/quiz/{$quiz->getRouteKey()}/question/{$question->getRouteKey()}", $attributes = [
+            'question_text' => 'question text changed',
+            'answer' => 'answer text changed',
+            'question_type' => 'text',
+            'options' => null,
+        ])->assertStatus(200);
+
+        $this->assertNotEquals('checkbox', $question->fresh()->question_type);
+
+        $this->assertEquals('text', $question->fresh()->question_type);
     }
 }
