@@ -43,7 +43,7 @@ class TestResultController extends Controller
             abort(403);
         }
 
-        if ((!is_null($test->user_id) && $test->user_id != auth()->id())) {
+        if ((!is_null($test->user_id) && $test->user_id != auth()->id()) && $test->quiz->user_id != auth()->id()) {
             abort(403);
         }
 

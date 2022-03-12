@@ -37,6 +37,27 @@ class ManageTestResultTest extends TestCase
     }
 
     /** @test */
+    public function tester_can_view_their_result_in_public_url()
+    {
+
+        $quiz = QuizFactory::withQuestions(2)->create([
+            'public' => true
+        ]);
+
+        $tester = $this->signIn();
+
+        $this->post("/test/quiz/{$quiz->getRouteKey()}", ['answers' => [
+            1 => 'one',
+            2 => 'four',
+        ]]);
+
+        $test = Test::first();
+
+        $this->get(route('result.show', $test))->assertStatus(200);
+        $this->get(route('result.public', $test))->assertStatus(200);
+    }
+
+    /** @test */
     public function other_user_cannot_view_other_tester_result()
     {
         $quiz = QuizFactory::withQuestions(2)->create();
